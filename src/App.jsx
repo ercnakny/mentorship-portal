@@ -4,17 +4,17 @@ import Dashboard from './pages/Dashboard';
 import SectionPage from './pages/SectionPage';
 import StepPage from './pages/StepPage';
 import LoginPage from './pages/LoginPage';
-import { SECTIONS } from './data/mentorshipSections';
+import Sidebar from './components/Sidebar';
 
-// Demo modu - gerçek Firebase entegrasyonu öncesi test için
+// Demo modu
 const DEMO_USER = {
   name: 'Ercan Akınay',
   email: 'akinay516@gmail.com',
   role: 'admin',
-  startDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 gün önce
-  completedSections: ['teknik'],
+  startDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+  completedSections: [],
   completedSteps: {
-    'teknik': ['teknik-1', 'teknik-2', 'teknik-3', 'teknik-4', 'teknik-5', 'teknik-6', 'teknik-7'],
+    'teknik': [],
     'urun': [],
     'icerik': [],
     'site': [],
@@ -24,8 +24,8 @@ const DEMO_USER = {
 };
 
 function App() {
-  const [user, setUser] = useState(DEMO_USER); // Demo için
-  const [currentView, setCurrentView] = useState('dashboard'); // dashboard | section | step
+  const [user, setUser] = useState(DEMO_USER);
+  const [currentView, setCurrentView] = useState('dashboard');
   const [selectedSection, setSelectedSection] = useState(null);
   const [selectedStep, setSelectedStep] = useState(null);
 
@@ -35,65 +35,55 @@ function App() {
     setSelectedStep(step);
   };
 
-  // Demo giriş kontrolü
   if (!user) {
     return <LoginPage onLogin={setUser} />;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-dark-500 via-dark-300 to-dark-200">
-      <AnimatePresence mode="wait">
-        {currentView === 'dashboard' && (
-          <motion.div
-            key="dashboard"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <Dashboard 
-              user={user} 
-              onNavigate={navigateTo} 
-            />
-          </motion.div>
-        )}
+    <div className="flex min-h-screen bg-dark-500">
+      <Sidebar user={user} currentView={currentView} onNavigate={(view, section, step) => navigateTo(view, section, step)} />
+      
+      <main className="flex-1 overflow-auto">
+        <AnimatePresence mode="wait">
+          {currentView === 'dashboard' && (
+            <motion.div
+              key="dashboard"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="min-h-full"
+            >
+              <Dashboard user={user} onNavigate={navigateTo} />
+            </motion.div>
+          )}
 
-        {currentView === 'section' && selectedSection && (
-          <motion.div
-            key={`section-${selectedSection.id}`}
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
-            transition={{ duration: 0.3 }}
-          >
-            <SectionPage 
-              section={selectedSection} 
-              user={user}
-              onNavigate={navigateTo}
-              onStepComplete={(stepId) => {
-                // Demo: adım tamamlandı
-                console.log('Step completed:', stepId);
-              }}
-            />
-          </motion.div>
-        )}
+          {currentView === 'section' && selectedSection && (
+            <motion.div
+              key={`section-${selectedSection.id}`}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+              className="min-h-full"
+            >
+              <SectionPage section={selectedSection} user={user} onNavigate={navigateTo} />
+            </motion.div>
+          )}
 
-        {currentView === 'step' && selectedSection && selectedStep && (
-          <motion.div
-            key={`step-${selectedStep.id}`}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-          >
-            <StepPage 
-              section={selectedSection}
-              step={selectedStep}
-              user={user}
-              onNavigate={navigateTo}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
+          {currentView === 'step' && selectedSection && selectedStep && (
+            <motion.div
+              key={`step-${selectedStep.id}`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="min-h-full"
+            >
+              <StepPage section={selectedSection} step={selectedStep} user={user} onNavigate={navigateTo} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
     </div>
   );
 }
