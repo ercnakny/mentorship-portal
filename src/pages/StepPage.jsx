@@ -6,8 +6,8 @@ const StepPage = ({ section, step, user, onNavigate }) => {
   const [isCompleted, setIsCompleted] = useState(
     user.completedSteps?.[section.id]?.includes(step.id) || false
   );
-  const [videoUrl, setVideoUrl] = useState('');
-  const [showVideoInput, setShowVideoInput] = useState(false);
+  const [videos, setVideos] = useState([{ id: 1, url: '' }]);
+  const [showAddVideo, setShowAddVideo] = useState(false);
   
   const currentIndex = section.steps.findIndex(s => s.id === step.id);
   const hasPrev = currentIndex > 0;
@@ -47,12 +47,27 @@ const StepPage = ({ section, step, user, onNavigate }) => {
     return match ? match[1] : null;
   };
 
-  const hasVideo = videoUrl && (getYouTubeId(videoUrl) || getLoomId(videoUrl));
+  const getEmbedType = (url) => {
+    if (getYouTubeId(url)) return 'youtube';
+    if (getLoomId(url)) return 'loom';
+    return null;
+  };
+
+  const addVideo = () => {
+    setVideos([...videos, { id: Date.now(), url: '' }]);
+    setShowAddVideo(false);
+  };
+
+  const updateVideo = (id, url) => {
+    setVideos(videos.map(v => v.id === id ? { ...v, url } : v));
+  };
+
+  const hasVideos = videos.some(v => getEmbedType(v.url));
 
   return (
-    <div className="min-h-screen p-6 md:p-8 pb-24 md:pb-8">
-      <div className="max-w-2xl mx-auto">
-        {/* Header */}
+    <div className="min-h-screen flex flex-col">
+      {/* Header */}
+      <div className="w-full max-w-4xl mx-auto px-6 pt-6">
         <motion.div className="mb-6" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
           <button 
             onClick={() => onNavigate('section', section)}
@@ -72,88 +87,110 @@ const StepPage = ({ section, step, user, onNavigate }) => {
             </div>
           </div>
         </motion.div>
+      </div>
 
-        {/* Content Card */}
+      {/* Content - Full Width with Centered Max Container */}
+      <div className="flex-1 w-full max-w-4xl mx-auto px-6">
         <motion.div className="bg-dark-200 rounded-2xl p-6 md:p-8 border border-dark-100 mb-6" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          {/* Video Section */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-white font-semibold flex items-center gap-2">
-                <Video className="w-5 h-5 text-primary-400" />
-                Eğitim Videosu
-              </h3>
-              {isAdmin && (
-                <button
-                  onClick={() => setShowVideoInput(!showVideoInput)}
-                  className="text-primary-400 text-sm hover:text-primary-300 transition-colors flex items-center gap-1"
-                >
-                  <Plus className="w-4 h-4" />
-                  Video Ekle
-                </button>
-              )}
-            </div>
-            
-            {/* Video Display */}
-            {hasVideo && (
-              <div className="aspect-video bg-dark-100 rounded-xl overflow-hidden mb-4">
-                {getYouTubeId(videoUrl) && (
-                  <iframe 
-                    className="w-full h-full"
-                    src={`https://www.youtube.com/embed/${getYouTubeId(videoUrl)}`}
-                    title="YouTube video"
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
+          
+          {/* Videos */}
+          <div className="space-y-4 mb-6">
+            {videos.map((video, idx) => (
+              <div key={video.id}>
+                {idx === 0 ? (
+                  // First video - replaceable
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-white font-semibold flex items-center gap-2">
+                        <Video className="w-5 h-5 text-primary-400" />
+                        Video {idx + 1}
+                      </h3>
+                      {isAdmin && (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {/* Replace mode - just update */}}
+                            className="text-primary-400 text-sm hover:text-primary-300 transition-colors flex items-center gap-1"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                            Değiştir
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    <input 
+                      type="text"
+                      value={video.url}
+                      onChange={(e) => updateVideo(video.id, e.target.value)}
+                      placeholder="YouTube veya Loom linki..."
+                      className="w-full bg-dark-100 border border-dark-100 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500"
+                    />
+                  </div>
+                ) : (
+                  // Additional videos
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-white font-semibold flex items-center gap-2">
+                        <Video className="w-5 h-5 text-emerald-400" />
+                        Video {idx + 1}
+                      </h3>
+                    </div>
+                    <input 
+                      type="text"
+                      value={video.url}
+                      onChange={(e) => updateVideo(video.id, e.target.value)}
+                      placeholder="YouTube veya Loom linki..."
+                      className="w-full bg-dark-100 border border-dark-100 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500"
+                    />
+                  </div>
                 )}
-                {getLoomId(videoUrl) && (
-                  <iframe 
-                    className="w-full h-full"
-                    src={`https://www.loom.com/embed/${getLoomId(videoUrl)}`}
-                    title="Loom video"
-                    frameBorder="0"
-                    allowFullScreen
-                  />
+                
+                {/* Video Display */}
+                {getEmbedType(video.url) && (
+                  <div className="aspect-video bg-dark-100 rounded-xl overflow-hidden mt-3">
+                    {getYouTubeId(video.url) && (
+                      <iframe 
+                        className="w-full h-full"
+                        src={`https://www.youtube.com/embed/${getYouTubeId(video.url)}`}
+                        title="YouTube video"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    )}
+                    {getLoomId(video.url) && (
+                      <iframe 
+                        className="w-full h-full"
+                        src={`https://www.loom.com/embed/${getLoomId(video.url)}`}
+                        title="Loom video"
+                        frameBorder="0"
+                        allowFullScreen
+                      />
+                    )}
+                  </div>
                 )}
               </div>
-            )}
-            
-            {/* Video Input */}
-            {showVideoInput && isAdmin && (
-              <div className="bg-dark-100 rounded-xl p-4 border border-dark-100">
-                <input 
-                  type="text"
-                  value={videoUrl}
-                  onChange={(e) => setVideoUrl(e.target.value)}
-                  placeholder="YouTube veya Loom linki yapıştırın..."
-                  className="w-full bg-dark-200 border border-dark-100 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500"
-                />
-                {hasVideo && (
-                  <p className="text-emerald-400 text-sm mt-2 flex items-center gap-1">
-                    <CheckCircle2 className="w-4 h-4" />
-                    Video algılandı!
-                  </p>
-                )}
-              </div>
-            )}
-            
-            {!hasVideo && !showVideoInput && (
-              <div className="aspect-video bg-dark-100 rounded-xl flex items-center justify-center">
-                <div className="text-center">
-                  <Play className="w-12 h-12 text-gray-500 mx-auto mb-2" />
-                  <p className="text-gray-500 text-sm">Video linki eklendiğinde görünecek</p>
-                </div>
-              </div>
-            )}
+            ))}
           </div>
+
+          {/* Add Video Button - Only for Admin */}
+          {isAdmin && (
+            <button
+              onClick={addVideo}
+              className="w-full py-3 border-2 border-dashed border-dark-100 rounded-xl text-gray-400 hover:text-white hover:border-primary-500/50 transition-colors flex items-center justify-center gap-2"
+            >
+              <Plus className="w-5 h-5" />
+              Yeni Video Ekle
+            </button>
+          )}
+
+          {/* Divider */}
+          <div className="border-t border-dark-100 my-6"></div>
 
           {/* Yapilacaklar */}
           <div>
             <h3 className="text-white font-semibold mb-3">Yapılacaklar</h3>
-            <div className="prose prose-invert prose-sm max-w-none text-gray-300">
-              <p className="text-gray-400 mb-4">{step.description}</p>
-              <div dangerouslySetInnerHTML={{ __html: step.content || '<p>Bu adım için içerik yakında eklenecek.</p>' }} />
-            </div>
+            <div className="text-gray-400 mb-4">{step.description}</div>
+            <div className="prose prose-invert prose-sm max-w-none text-gray-300" dangerouslySetInnerHTML={{ __html: step.content || '<p>Bu adım için içerik yakında eklenecek.</p>' }} />
           </div>
         </motion.div>
 
@@ -180,7 +217,7 @@ const StepPage = ({ section, step, user, onNavigate }) => {
         </motion.div>
 
         {/* Navigation */}
-        <motion.div className="flex items-center justify-between gap-4" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+        <motion.div className="flex items-center justify-between gap-4 pb-8" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
           <button 
             onClick={handlePrev}
             disabled={!hasPrev && currentIndex === 0}
