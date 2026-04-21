@@ -52,6 +52,7 @@ body {
 /* Main content area - Desktop */
 main {
   margin-left: 16rem;
+  min-height: 100vh;
 }
 
 /* Mobile: No sidebar, bottom nav only */
