@@ -2,23 +2,14 @@ import { motion } from 'framer-motion';
 import { 
   ArrowLeft, 
   CheckCircle2,
-  Lock,
-  ChevronRight
+  Lock
 } from 'lucide-react';
 
 const SectionPage = ({ section, user, onNavigate }) => {
   const completedSteps = user.completedSteps?.[section.id] || [];
   
   const handleStepClick = (step, index) => {
-    // First step is always accessible
-    if (index === 0) {
-      onNavigate('step', section, step);
-      return;
-    }
-    
-    // Check if previous step is completed
-    const prevStep = section.steps[index - 1];
-    if (prevStep && completedSteps.includes(prevStep.id)) {
+    if (index === 0 || completedSteps.includes(section.steps[index - 1]?.id)) {
       onNavigate('step', section, step);
     }
   };
@@ -35,11 +26,12 @@ const SectionPage = ({ section, user, onNavigate }) => {
   const totalCount = section.steps.length;
   const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
+  // Grid layout: 3 items per row on mobile, more on desktop
   return (
     <div className="p-6 md:p-8 pb-24 md:pb-8">
       {/* Header */}
       <motion.div 
-        className="mb-8"
+        className="mb-6"
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
       >
@@ -54,7 +46,7 @@ const SectionPage = ({ section, user, onNavigate }) => {
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
           <div>
             <h1 className="text-2xl md:text-4xl font-bold text-white mb-1">{section.title}</h1>
-            <p className="text-gray-400 text-sm md:text-base">{section.subtitle}</p>
+            <p className="text-gray-400 text-sm">{section.subtitle}</p>
           </div>
           <div className="flex items-center gap-3 bg-dark-200 px-4 py-2 rounded-xl border border-dark-100">
             <span className="text-gray-400 text-sm">{section.duration} gün süre</span>
@@ -83,9 +75,9 @@ const SectionPage = ({ section, user, onNavigate }) => {
         </div>
       </motion.div>
 
-      {/* Step Cards */}
+      {/* Circle Navigation - Grid Layout */}
       <motion.div 
-        className="space-y-3"
+        className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6 justify-items-center"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
@@ -95,60 +87,61 @@ const SectionPage = ({ section, user, onNavigate }) => {
           const isClickable = status !== 'locked';
           
           return (
-            <motion.button
+            <motion.div
               key={step.id}
-              onClick={() => handleStepClick(step, index)}
-              disabled={!isClickable}
-              whileHover={isClickable ? { x: 4 } : {}}
-              className={`
-                w-full flex items-center gap-4 p-4 rounded-2xl border transition-all duration-200 text-left
-                ${status === 'completed' 
-                  ? 'bg-emerald-500/10 border-emerald-500/30'
-                  : status === 'active'
-                    ? 'bg-primary-500/10 border-primary-500/50 shadow-lg shadow-primary-500/10'
-                    : status === 'unlocked'
-                      ? 'bg-dark-200 border-dark-100 hover:border-primary-500/50'
-                      : 'bg-dark-300/50 border-dark-100 opacity-60 cursor-not-allowed'
-                }
-              `}
+              className="flex flex-col items-center"
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.05 }}
             >
-              {/* Step Number */}
-              <div className={`
-                w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold flex-shrink-0
-                ${status === 'completed' 
-                  ? 'bg-emerald-500 text-white'
-                  : status === 'active'
-                    ? 'bg-primary-500 text-white'
-                    : status === 'unlocked'
-                      ? 'bg-dark-100 text-white'
-                      : 'bg-dark-100 text-gray-500'
-                }
-              `}>
+              {/* Circle Button */}
+              <motion.button
+                onClick={() => isClickable && handleStepClick(step, index)}
+                disabled={!isClickable}
+                whileHover={isClickable ? { scale: 1.1 } : {}}
+                whileTap={isClickable ? { scale: 0.95 } : {}}
+                className={`
+                  w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center text-2xl md:text-3xl font-bold transition-all duration-300 shadow-lg
+                  ${status === 'completed' 
+                    ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-emerald-500/40'
+                    : status === 'active'
+                      ? 'bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-primary-500/40 ring-4 ring-primary-500/30'
+                      : status === 'unlocked'
+                        ? 'bg-dark-200 text-white border-4 border-primary-500/50 hover:border-primary-500'
+                        : 'bg-dark-300 text-gray-500 cursor-not-allowed border-4 border-dark-100'
+                  }
+                `}
+              >
                 {status === 'completed' ? (
-                  <CheckCircle2 className="w-6 h-6" />
+                  <CheckCircle2 className="w-8 h-8 md:w-10 md:h-10" />
                 ) : status === 'locked' ? (
-                  <Lock className="w-5 h-5" />
+                  <Lock className="w-6 h-6 md:w-7 md:h-7" />
                 ) : (
                   <span>{index + 1}</span>
                 )}
-              </div>
+              </motion.button>
               
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                <h3 className={`font-semibold mb-0.5 ${status === 'locked' ? 'text-gray-500' : 'text-white'}`}>
-                  {step.title}
-                </h3>
-                <p className="text-gray-500 text-sm truncate">{step.description}</p>
-              </div>
-              
-              {/* Arrow */}
-              {isClickable && (
-                <ChevronRight className={`w-5 h-5 flex-shrink-0 ${status === 'completed' ? 'text-emerald-400' : 'text-gray-500'}`} />
-              )}
-            </motion.button>
+              {/* Step Number Label */}
+              <p className={`
+                mt-3 text-xs md:text-sm font-medium
+                ${status === 'locked' ? 'text-gray-500' : 'text-gray-300'}
+              `}>
+                {index + 1}. Adım
+              </p>
+            </motion.div>
           );
         })}
       </motion.div>
+
+      {/* Hint */}
+      <motion.p 
+        className="text-center text-gray-500 text-sm mt-8"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.4 }}
+      >
+        Bir adıma tıklayarak detayları görüntüleyebilirsiniz
+      </motion.p>
     </div>
   );
 };
