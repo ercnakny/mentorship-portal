@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
   ArrowLeft,
   Users,
@@ -58,7 +58,6 @@ const calculateTimeline = (startDate) => {
   return { timeline, totalDays: 90, endDate: endDate.toISOString().split('T')[0] };
 };
 
-// Demo data with client progress
 const DEMO_CLIENTS = [
   {
     id: 1,
@@ -125,11 +124,9 @@ const DEMO_CLIENTS = [
 const AdminPanel = ({ user, onNavigate }) => {
   const [activeTab, setActiveTab] = useState('requests');
   const [expandedUser, setExpandedUser] = useState(null);
-  const [trackingView, setTrackingView] = useState('grid'); // 'grid' or 'list'
   const [selectedClient, setSelectedClient] = useState(null);
-  const [clientFilter, setClientFilter] = useState('all'); // 'all', 'active', 'stuck', 'pending'
+  const [clientFilter, setClientFilter] = useState('all');
   
-  // New user form state
   const [newUser, setNewUser] = useState({
     email: '',
     name: '',
@@ -138,7 +135,6 @@ const AdminPanel = ({ user, onNavigate }) => {
     startDate: new Date().toISOString().split('T')[0]
   });
 
-  // Demo data
   const [allowedEmails, setAllowedEmails] = useState([
     { 
       email: 'akinay516@gmail.com', 
@@ -172,7 +168,7 @@ const AdminPanel = ({ user, onNavigate }) => {
     return {
       timeline,
       currentSectionIdx,
-      overallProgress: Math.round((client.completedSteps.length / 30) * 100) // Assuming ~30 total steps
+      overallProgress: Math.round((client.completedSteps.length / 30) * 100)
     };
   };
 
@@ -198,65 +194,54 @@ const AdminPanel = ({ user, onNavigate }) => {
   };
 
   const handleApproveRequest = (requestId) => {
-    setRequests(requests.map(r => 
-      r.id === requestId ? { ...r, status: 'approved' } : r
-    ));
+    setRequests(requests.map(r => r.id === requestId ? { ...r, status: 'approved' } : r));
   };
 
   const handleRejectRequest = (requestId) => {
-    setRequests(requests.map(r => 
-      r.id === requestId ? { ...r, status: 'rejected' } : r
-    ));
+    setRequests(requests.map(r => r.id === requestId ? { ...r, status: 'rejected' } : r));
   };
 
   const pendingCount = requests.filter(r => r.status === 'pending').length;
 
   return (
     <div className="p-6 md:p-8">
-      {/* Header */}
       <motion.div className="mb-8" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-        <button 
-          onClick={() => onNavigate('dashboard')}
-          className="flex items-center gap-2 text-gray-400 hover:text-white mb-6 transition-colors text-sm"
-        >
+        <button onClick={() => onNavigate('dashboard')} className="flex items-center gap-2 text-gray-400 hover:text-white mb-6 transition-colors text-sm">
           <ArrowLeft className="w-4 h-4" />
           <span>Dashboard</span>
         </button>
-        
         <h1 className="text-2xl md:text-4xl font-bold text-white mb-2">Admin Panel</h1>
         <p className="text-gray-400">Danışanlarınızı ve talepleri yönetin</p>
       </motion.div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-6 overflow-x-auto">
+      <div className="flex flex-wrap gap-3 mb-6">
         <button
           onClick={() => setActiveTab('requests')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'requests' ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30' : 'bg-dark-200 text-gray-400 border border-dark-100 hover:border-primary-500/30'}`}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${activeTab === 'requests' ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30' : 'bg-dark-200 text-gray-400 border border-dark-100 hover:border-primary-500/30'}`}
         >
-          <Clock className="w-4 h-4" />
-          Talepler
-          {pendingCount > 0 && <span className="bg-amber-500 text-white text-xs px-2 py-0.5 rounded-full">{pendingCount}</span>}
+          <Clock className="w-4 h-4 flex-shrink-0" />
+          <span>Talepler</span>
+          {pendingCount > 0 && <span className="bg-amber-500 text-white text-xs px-2 py-0.5 rounded-full flex-shrink-0">{pendingCount}</span>}
         </button>
         <button
           onClick={() => setActiveTab('users')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'users' ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30' : 'bg-dark-200 text-gray-400 border border-dark-100 hover:border-primary-500/30'}`}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${activeTab === 'users' ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30' : 'bg-dark-200 text-gray-400 border border-dark-100 hover:border-primary-500/30'}`}
         >
-          <Users className="w-4 h-4" />
-          Danışanlar
+          <Users className="w-4 h-4 flex-shrink-0" />
+          <span>Danışanlar</span>
         </button>
         <button
           onClick={() => setActiveTab('tracking')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'tracking' ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30' : 'bg-dark-200 text-gray-400 border border-dark-100 hover:border-primary-500/30'}`}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${activeTab === 'tracking' ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30' : 'bg-dark-200 text-gray-400 border border-dark-100 hover:border-primary-500/30'}`}
         >
-          <TrendingUp className="w-4 h-4" />
-          Süreç Takibi
-          {stuckClients.length > 0 && (
-            <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{stuckClients.length}</span>
-          )}
+          <TrendingUp className="w-4 h-4 flex-shrink-0" />
+          <span>Süreç Takibi</span>
+          {stuckClients.length > 0 && <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full flex-shrink-0">{stuckClients.length}</span>}
         </button>
       </div>
 
-      {/* Content */}
+      {/* Requests Tab */}
       {activeTab === 'requests' && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
           {requests.length === 0 ? (
@@ -300,6 +285,7 @@ const AdminPanel = ({ user, onNavigate }) => {
         </motion.div>
       )}
 
+      {/* Users Tab */}
       {activeTab === 'users' && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
           <div className="bg-dark-200 rounded-2xl p-5 border border-dark-100 mb-6">
@@ -311,70 +297,32 @@ const AdminPanel = ({ user, onNavigate }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="text-gray-400 text-sm mb-1 block">Ad Soyad *</label>
-                <input 
-                  type="text"
-                  value={newUser.name}
-                  onChange={(e) => setNewUser({...newUser, name: e.target.value})}
-                  placeholder="Örn: Mehmet Demir"
-                  className="w-full bg-dark-100 border border-dark-100 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500"
-                />
+                <input type="text" value={newUser.name} onChange={(e) => setNewUser({...newUser, name: e.target.value})} placeholder="Örn: Mehmet Demir" className="w-full bg-dark-100 border border-dark-100 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500" />
               </div>
               <div>
                 <label className="text-gray-400 text-sm mb-1 block">E-posta *</label>
-                <input 
-                  type="email"
-                  value={newUser.email}
-                  onChange={(e) => setNewUser({...newUser, email: e.target.value})}
-                  placeholder="ornek@email.com"
-                  className="w-full bg-dark-100 border border-dark-100 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500"
-                />
+                <input type="email" value={newUser.email} onChange={(e) => setNewUser({...newUser, email: e.target.value})} placeholder="ornek@email.com" className="w-full bg-dark-100 border border-dark-100 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500" />
               </div>
               <div>
-                <label className="text-gray-400 text-sm mb-1 block flex items-center gap-1">
-                  <Building className="w-4 h-4" />
-                  Sektör
-                </label>
-                <input 
-                  type="text"
-                  value={newUser.industry}
-                  onChange={(e) => setNewUser({...newUser, industry: e.target.value})}
-                  placeholder="Örn: Psikoloji, Fitness, Diyetisyen"
-                  className="w-full bg-dark-100 border border-dark-100 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500"
-                />
+                <label className="text-gray-400 text-sm mb-1 block flex items-center gap-1"><Building className="w-4 h-4" />Sektör</label>
+                <input type="text" value={newUser.industry} onChange={(e) => setNewUser({...newUser, industry: e.target.value})} placeholder="Örn: Psikoloji, Fitness, Diyetisyen" className="w-full bg-dark-100 border border-dark-100 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500" />
               </div>
               <div>
-                <label className="text-gray-400 text-sm mb-1 block flex items-center gap-1">
-                  <FileText className="w-4 h-4" />
-                  İçerik Desteği
-                </label>
-                <select 
-                  value={newUser.hasContentSupport ? 'destekli' : 'desteksiz'}
-                  onChange={(e) => setNewUser({...newUser, hasContentSupport: e.target.value === 'destekli'})}
-                  className="w-full bg-dark-100 border border-dark-100 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500"
-                >
+                <label className="text-gray-400 text-sm mb-1 block flex items-center gap-1"><FileText className="w-4 h-4" />İçerik Desteği</label>
+                <select value={newUser.hasContentSupport ? 'destekli' : 'desteksiz'} onChange={(e) => setNewUser({...newUser, hasContentSupport: e.target.value === 'destekli'})} className="w-full bg-dark-100 border border-dark-100 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500">
                   <option value="destekli">İçerik Destekli</option>
                   <option value="desteksiz">Desteksiz</option>
                 </select>
               </div>
               <div>
-                <label className="text-gray-400 text-sm mb-1 block flex items-center gap-1">
-                  <Calendar className="w-4 h-4" />
-                  Başlangıç Tarihi
-                </label>
-                <input 
-                  type="date"
-                  value={newUser.startDate}
-                  onChange={(e) => setNewUser({...newUser, startDate: e.target.value})}
-                  className="w-full bg-dark-100 border border-dark-100 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500"
-                />
+                <label className="text-gray-400 text-sm mb-1 block flex items-center gap-1"><Calendar className="w-4 h-4" />Başlangıç Tarihi</label>
+                <input type="date" value={newUser.startDate} onChange={(e) => setNewUser({...newUser, startDate: e.target.value})} className="w-full bg-dark-100 border border-dark-100 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500" />
               </div>
             </div>
 
             {newUser.startDate && (
               <div className="bg-dark-100 rounded-xl p-4 mb-4">
-                <p className="text-gray-400 text-sm mb-2">
-                  90 Günlük Süreç (Tahmini Bitiş: {calculateTimeline(newUser.startDate).endDate})
-                </p>
+                <p className="text-gray-400 text-sm mb-2">90 Günlük Süreç (Tahmini Bitiş: {calculateTimeline(newUser.startDate).endDate})</p>
                 <div className="grid grid-cols-5 gap-2">
                   {calculateTimeline(newUser.startDate).timeline.map((section) => (
                     <div key={section.id} className="bg-dark-200 rounded-lg p-2 text-center">
@@ -386,11 +334,7 @@ const AdminPanel = ({ user, onNavigate }) => {
               </div>
             )}
 
-            <button 
-              onClick={handleAddUser}
-              disabled={!newUser.email || !newUser.name}
-              className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-            >
+            <button onClick={handleAddUser} disabled={!newUser.email || !newUser.name} className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed">
               <Plus className="w-4 h-4" />
               Danışan Ekle
             </button>
@@ -410,18 +354,14 @@ const AdminPanel = ({ user, onNavigate }) => {
                         <div className="flex items-center gap-2">
                           <h3 className="text-white font-semibold">{u.name}</h3>
                           {u.role === 'admin' && <span className="px-2 py-0.5 bg-primary-500/20 text-primary-400 text-xs rounded-lg">Admin</span>}
-                          <span className={`px-2 py-0.5 text-xs rounded-lg ${u.status === 'active' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>
-                            {u.status === 'active' ? 'Aktif' : 'Bekliyor'}
-                          </span>
+                          <span className={`px-2 py-0.5 text-xs rounded-lg ${u.status === 'active' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>{u.status === 'active' ? 'Aktif' : 'Bekliyor'}</span>
                         </div>
                         <p className="text-gray-500 text-sm">{u.email}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       {u.role !== 'admin' && (
-                        <button onClick={() => handleDeleteUser(u.email)} className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <button onClick={() => handleDeleteUser(u.email)} className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
                       )}
                       <button onClick={() => setExpandedUser(expandedUser === index ? null : index)} className="p-2 text-gray-400 hover:text-white hover:bg-dark-100 rounded-lg transition-colors">
                         {expandedUser === index ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
@@ -438,9 +378,7 @@ const AdminPanel = ({ user, onNavigate }) => {
                         </div>
                         <div className="bg-dark-100 rounded-xl p-3">
                           <p className="text-gray-500 text-xs mb-1">İçerik Desteği</p>
-                          <p className={`text-sm ${u.hasContentSupport ? 'text-emerald-400' : 'text-gray-400'}`}>
-                            {u.hasContentSupport ? 'Destekli' : 'Desteksiz'}
-                          </p>
+                          <p className={`text-sm ${u.hasContentSupport ? 'text-emerald-400' : 'text-gray-400'}`}>{u.hasContentSupport ? 'Destekli' : 'Desteksiz'}</p>
                         </div>
                         <div className="bg-dark-100 rounded-xl p-3">
                           <p className="text-gray-500 text-xs mb-1">Başlangıç</p>
@@ -458,9 +396,7 @@ const AdminPanel = ({ user, onNavigate }) => {
                           <div className="space-y-2">
                             {timeline.timeline.map((section, idx) => (
                               <div key={section.id} className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-primary-500/20 text-primary-400 flex items-center justify-center text-sm font-medium">
-                                  {idx + 1}
-                                </div>
+                                <div className="w-8 h-8 rounded-lg bg-primary-500/20 text-primary-400 flex items-center justify-center text-sm font-medium">{idx + 1}</div>
                                 <div className="flex-1">
                                   <div className="flex items-center justify-between mb-0.5">
                                     <p className="text-white text-sm font-medium">{section.name}</p>
@@ -485,6 +421,7 @@ const AdminPanel = ({ user, onNavigate }) => {
         </motion.div>
       )}
 
+      {/* Tracking Tab */}
       {activeTab === 'tracking' && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
           {/* Stats Overview */}
@@ -508,31 +445,11 @@ const AdminPanel = ({ user, onNavigate }) => {
           </div>
 
           {/* Filters */}
-          <div className="flex gap-2 mb-6 overflow-x-auto">
-            <button
-              onClick={() => setClientFilter('all')}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${clientFilter === 'all' ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30' : 'bg-dark-200 text-gray-400 border border-dark-100'}`}
-            >
-              Tümü ({clients.length})
-            </button>
-            <button
-              onClick={() => setClientFilter('active')}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${clientFilter === 'active' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-dark-200 text-gray-400 border border-dark-100'}`}
-            >
-              Aktif ({clients.filter(c => c.status === 'active').length})
-            </button>
-            <button
-              onClick={() => setClientFilter('stuck')}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${clientFilter === 'stuck' ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-dark-200 text-gray-400 border border-dark-100'}`}
-            >
-              Takılan ({stuckClients.length})
-            </button>
-            <button
-              onClick={() => setClientFilter('pending')}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${clientFilter === 'pending' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-dark-200 text-gray-400 border border-dark-100'}`}
-            >
-              Bekleyen ({clients.filter(c => c.status === 'pending').length})
-            </button>
+          <div className="flex flex-wrap gap-2 mb-6">
+            <button onClick={() => setClientFilter('all')} className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${clientFilter === 'all' ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30' : 'bg-dark-200 text-gray-400 border border-dark-100'}`}>Tümü ({clients.length})</button>
+            <button onClick={() => setClientFilter('active')} className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${clientFilter === 'active' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-dark-200 text-gray-400 border border-dark-100'}`}>Aktif ({clients.filter(c => c.status === 'active').length})</button>
+            <button onClick={() => setClientFilter('stuck')} className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${clientFilter === 'stuck' ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-dark-200 text-gray-400 border border-dark-100'}`}>Takılan ({stuckClients.length})</button>
+            <button onClick={() => setClientFilter('pending')} className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${clientFilter === 'pending' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-dark-200 text-gray-400 border border-dark-100'}`}>Bekleyen ({clients.filter(c => c.status === 'pending').length})</button>
           </div>
 
           {/* Client List */}
@@ -545,10 +462,7 @@ const AdminPanel = ({ user, onNavigate }) => {
               return (
                 <div key={client.id} className="bg-dark-200 rounded-2xl border border-dark-100 overflow-hidden">
                   {/* Client Summary Row */}
-                  <div 
-                    className="p-4 flex items-center justify-between cursor-pointer hover:bg-dark-100/50 transition-colors"
-                    onClick={() => setSelectedClient(isExpanded ? null : client.id)}
-                  >
+                  <div className="p-4 flex items-center justify-between cursor-pointer hover:bg-dark-100/50 transition-colors" onClick={() => setSelectedClient(isExpanded ? null : client.id)}>
                     <div className="flex items-center gap-4">
                       <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${currentSection?.color || 'from-gray-500 to-gray-600'} flex items-center justify-center`}>
                         <span className="text-white font-bold">{client.name.charAt(0)}</span>
@@ -572,19 +486,9 @@ const AdminPanel = ({ user, onNavigate }) => {
                       <div className="relative w-12 h-12">
                         <svg className="w-12 h-12 transform -rotate-90">
                           <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="4" fill="none" className="text-dark-100" />
-                          <circle 
-                            cx="24" cy="24" r="20" 
-                            stroke="currentColor" 
-                            strokeWidth="4" 
-                            fill="none" 
-                            className={client.stuckDays > 3 ? 'text-red-500' : 'text-primary-500'}
-                            strokeDasharray={`${progress.overallProgress * 1.26} 126`}
-                            strokeLinecap="round"
-                          />
+                          <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="4" fill="none" className={client.stuckDays > 3 ? 'text-red-500' : 'text-primary-500'} strokeDasharray={`${progress.overallProgress * 1.26} 126`} strokeLinecap="round" />
                         </svg>
-                        <span className="absolute inset-0 flex items-center justify-center text-xs font-medium text-white">
-                          %{progress.overallProgress}
-                        </span>
+                        <span className="absolute inset-0 flex items-center justify-center text-xs font-medium text-white">%{progress.overallProgress}</span>
                       </div>
                       
                       <ChevronRight className={`w-5 h-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
@@ -592,93 +496,72 @@ const AdminPanel = ({ user, onNavigate }) => {
                   </div>
 
                   {/* Expanded Details */}
-                  <AnimatePresence>
-                    {isExpanded && (
-                      <motion.div 
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="border-t border-dark-100 overflow-hidden"
-                      >
-                        <div className="p-4 bg-dark-100/50">
-                          {/* Timeline Progress */}
-                          <div className="mb-4">
-                            <p className="text-gray-400 text-sm mb-3">Süreç Durumu</p>
-                            <div className="flex gap-1">
-                              {progress.timeline.map((section, idx) => {
-                                const isCompleted = idx < progress.currentSectionIdx;
-                                const isCurrent = idx === progress.currentSectionIdx;
-                                const isPending = idx > progress.currentSectionIdx;
-                                
-                                return (
-                                  <div 
-                                    key={section.id}
-                                    className={`flex-1 h-8 rounded-lg flex items-center justify-center text-xs font-medium transition-all ${
-                                      isCompleted ? 'bg-emerald-500 text-white' :
-                                      isCurrent ? `bg-gradient-to-r ${section.color} text-white` :
-                                      'bg-dark-200 text-gray-500'
-                                    }`}
-                                    title={`${section.name}: ${section.dayStart}-${section.dayEnd}. gün`}
-                                  >
-                                    {isCurrent && <span className="truncate px-1">{section.name}</span>}
-                                    {isCompleted && <CheckCircle2 className="w-4 h-4" />}
-                                  </div>
-                                );
-                              })}
-                            </div>
+                  {isExpanded && (
+                    <div className="border-t border-dark-100">
+                      <div className="p-4 bg-dark-100/50">
+                        {/* Timeline Progress */}
+                        <div className="mb-4">
+                          <p className="text-gray-400 text-sm mb-3">Süreç Durumu</p>
+                          <div className="flex gap-1">
+                            {progress.timeline.map((section, idx) => {
+                              const isCompleted = idx < progress.currentSectionIdx;
+                              const isCurrent = idx === progress.currentSectionIdx;
+                              
+                              return (
+                                <div key={section.id} className={`flex-1 h-8 rounded-lg flex items-center justify-center text-xs font-medium transition-all ${isCompleted ? 'bg-emerald-500 text-white' : isCurrent ? `bg-gradient-to-r ${section.color} text-white` : 'bg-dark-200 text-gray-500'}`} title={`${section.name}: ${section.dayStart}-${section.dayEnd}. gün`}>
+                                  {isCompleted && <CheckCircle2 className="w-4 h-4" />}
+                                  {isCurrent && <span className="truncate px-1">{section.name}</span>}
+                                </div>
+                              );
+                            })}
                           </div>
-
-                          {/* Current Section Detail */}
-                          <div className="bg-dark-200 rounded-xl p-4 mb-4">
-                            <div className="flex items-center justify-between mb-2">
-                              <div>
-                                <p className="text-gray-400 text-xs">Şu An</p>
-                                <p className="text-white font-semibold capitalize">{client.currentSection} Bölümü • Adım {client.currentStep}/{client.totalSteps}</p>
-                              </div>
-                              <div className="text-right">
-                                <p className="text-gray-400 text-xs">Kalan</p>
-                                <p className="text-white font-semibold">{90 - Math.round((new Date() - new Date(client.startDate)) / (1000 * 60 * 60 * 24))} gün</p>
-                              </div>
-                            </div>
-                            <div className="h-2 bg-dark-100 rounded-full overflow-hidden">
-                              <div 
-                                className={`h-full bg-gradient-to-r ${currentSection?.color || 'from-primary-500 to-primary-600'} rounded-full`}
-                                style={{ width: `${(client.currentStep / client.totalSteps) * 100}%` }}
-                              />
-                            </div>
-                          </div>
-
-                          {/* Client Info */}
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                            <div className="bg-dark-200 rounded-lg p-3">
-                              <p className="text-gray-500 text-xs mb-1">Başlangıç</p>
-                              <p className="text-white text-sm">{client.startDate}</p>
-                            </div>
-                            <div className="bg-dark-200 rounded-lg p-3">
-                              <p className="text-gray-500 text-xs mb-1">Bitiş</p>
-                              <p className="text-white text-sm">{progress.timeline.endDate}</p>
-                            </div>
-                            <div className="bg-dark-200 rounded-lg p-3">
-                              <p className="text-gray-500 text-xs mb-1">Son Aktivite</p>
-                              <p className="text-white text-sm">{client.lastActivity || '-'}</p>
-                            </div>
-                            <div className="bg-dark-200 rounded-lg p-3">
-                              <p className="text-gray-500 text-xs mb-1">İçerik Desteği</p>
-                              <p className={`text-sm ${client.hasContentSupport ? 'text-emerald-400' : 'text-gray-400'}`}>
-                                {client.hasContentSupport ? 'Destekli' : 'Desteksiz'}
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Action */}
-                          <button className="w-full btn-primary">
-                            <Eye className="w-4 h-4" />
-                            Danışanı Görüntüle
-                          </button>
                         </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+
+                        {/* Current Section Detail */}
+                        <div className="bg-dark-200 rounded-xl p-4 mb-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <div>
+                              <p className="text-gray-400 text-xs">Şu An</p>
+                              <p className="text-white font-semibold capitalize">{client.currentSection} Bölümü • Adım {client.currentStep}/{client.totalSteps}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-gray-400 text-xs">Kalan</p>
+                              <p className="text-white font-semibold">{90 - Math.round((new Date() - new Date(client.startDate)) / (1000 * 60 * 60 * 24))} gün</p>
+                            </div>
+                          </div>
+                          <div className="h-2 bg-dark-100 rounded-full overflow-hidden">
+                            <div className={`h-full bg-gradient-to-r ${currentSection?.color || 'from-primary-500 to-primary-600'} rounded-full`} style={{ width: `${(client.currentStep / client.totalSteps) * 100}%` }} />
+                          </div>
+                        </div>
+
+                        {/* Client Info Grid */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                          <div className="bg-dark-200 rounded-lg p-3">
+                            <p className="text-gray-500 text-xs mb-1">Başlangıç</p>
+                            <p className="text-white text-sm">{client.startDate}</p>
+                          </div>
+                          <div className="bg-dark-200 rounded-lg p-3">
+                            <p className="text-gray-500 text-xs mb-1">Bitiş</p>
+                            <p className="text-white text-sm">{progress.timeline.endDate}</p>
+                          </div>
+                          <div className="bg-dark-200 rounded-lg p-3">
+                            <p className="text-gray-500 text-xs mb-1">Son Aktivite</p>
+                            <p className="text-white text-sm">{client.lastActivity || '-'}</p>
+                          </div>
+                          <div className="bg-dark-200 rounded-lg p-3">
+                            <p className="text-gray-500 text-xs mb-1">İçerik Desteği</p>
+                            <p className={`text-sm ${client.hasContentSupport ? 'text-emerald-400' : 'text-gray-400'}`}>{client.hasContentSupport ? 'Destekli' : 'Desteksiz'}</p>
+                          </div>
+                        </div>
+
+                        {/* Action Button */}
+                        <button className="w-full btn-primary">
+                          <Eye className="w-4 h-4" />
+                          Danışanı Görüntüle
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })}
