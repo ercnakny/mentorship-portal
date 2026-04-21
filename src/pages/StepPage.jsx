@@ -1,18 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  ArrowLeft, 
-  ChevronLeft,
-  ChevronRight,
-  CheckCircle2,
-  Play
-} from 'lucide-react';
-import { saveUserProgress } from '../firebase/client';
+import { ArrowLeft, ChevronLeft, ChevronRight, CheckCircle2, Play, Plus, Edit2, Video, Link } from 'lucide-react';
 
 const StepPage = ({ section, step, user, onNavigate }) => {
   const [isCompleted, setIsCompleted] = useState(
     user.completedSteps?.[section.id]?.includes(step.id) || false
   );
+  const [videoUrl, setVideoUrl] = useState('');
+  const [embedMode, setEmbedMode] = useState('new'); // 'replace' or 'new'
   
   const currentIndex = section.steps.findIndex(s => s.id === step.id);
   const hasPrev = currentIndex > 0;
@@ -22,33 +17,8 @@ const StepPage = ({ section, step, user, onNavigate }) => {
 
   const isAdmin = user.role === 'admin';
 
-  // Check if this is the last step in the section
-  const isLastStep = currentIndex === section.steps.length - 1;
-  const allStepsCompleted = user.completedSteps?.[section.id]?.length === section.steps.length - 1;
-
-  const handleComplete = async () => {
+  const handleComplete = () => {
     setIsCompleted(true);
-    
-    // Save to Firebase
-    if (user.uid) {
-      const updatedCompletedSteps = [...(user.completedSteps?.[section.id] || []), step.id];
-      await saveUserProgress(user.uid, {
-        completedSteps: {
-          ...user.completedSteps,
-          [section.id]: updatedCompletedSteps
-        }
-      });
-    }
-    
-    // If last step and section completed, mark section as completed
-    if (isLastStep) {
-      const updatedCompletedSections = [...(user.completedSections || []), section.id];
-      if (user.uid) {
-        await saveUserProgress(user.uid, {
-          completedSections: updatedCompletedSections
-        });
-      }
-    }
   };
 
   const handleNext = () => {
@@ -66,6 +36,59 @@ const StepPage = ({ section, step, user, onNavigate }) => {
       onNavigate('section', section);
     }
   };
+
+  // Extract YouTube ID from URL
+  const getYouTubeId = (url) => {
+    const match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    return match ? match[1] : null;
+  };
+
+  // Extract Loom ID from URL
+  const getLoomId = (url) => {
+    const match = url.match(/loom\.com\/share\/([a-zA-Z0-9]+)/);
+    return match ? match[1] : null;
+  };
+
+  // Determine embed type
+  const getEmbedType = (url) => {
+    if (getYouTubeId(url)) return 'youtube';
+    if (getLoomId(url)) return 'loom';
+    return null;
+  };
+
+  const renderVideo = () => {
+    const videoId = getYouTubeId(videoUrl);
+    const loomId = getLoomId(videoUrl);
+    
+    if (videoId) {
+      return (
+        <iframe 
+          className="w-full h-full rounded-xl"
+          src={`https://www.youtube.com/embed/${videoId}`}
+          title="YouTube video player"
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      );
+    }
+    
+    if (loomId) {
+      return (
+        <iframe 
+          className="w-full h-full rounded-xl"
+          src={`https://www.loom.com/embed/${loomId}`}
+          title="Loom video player"
+          frameBorder="0"
+          allowFullScreen
+        />
+      );
+    }
+    
+    return null;
+  };
+
+  const hasVideo = videoUrl && getEmbedType(videoUrl);
 
   return (
     <div className="p-6 md:p-8 pb-24 md:pb-8 max-w-3xl mx-auto">
@@ -110,15 +133,25 @@ const StepPage = ({ section, step, user, onNavigate }) => {
         {/* Step Description */}
         <p className="text-gray-400 mb-6">{step.description}</p>
         
-        {/* Video Placeholder - Üstte */}
-        <div className="bg-dark-300/50 rounded-xl p-4 mb-6 border border-dark-100">
-          <p className="text-gray-400 text-sm mb-2">Eğitim Videosu</p>
-          <div className="aspect-video bg-dark-100 rounded-xl flex items-center justify-center">
-            <div className="text-center">
-              <Play className="w-12 h-12 text-gray-500 mx-auto mb-2" />
-              <p className="text-gray-500 text-sm">Video yakında eklenecek</p>
+        {/* Video Section - Üstte */}
+        <div className="mb-6">
+          <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
+            <Video className="w-5 h-5 text-primary-400" />
+            Eğitim Videosu
+          </h3>
+          
+          {hasVideo ? (
+            <div className="aspect-video bg-dark-100 rounded-xl overflow-hidden">
+              {renderVideo()}
             </div>
-          </div>
+          ) : (
+            <div className="aspect-video bg-dark-100 rounded-xl flex items-center justify-center">
+              <div className="text-center">
+                <Play className="w-12 h-12 text-gray-500 mx-auto mb-2" />
+                <p className="text-gray-500 text-sm">Video linki eklendiğinde görünecek</p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Yapilacaklar - Altta */}
@@ -130,25 +163,58 @@ const StepPage = ({ section, step, user, onNavigate }) => {
           />
         </div>
 
-        {/* Admin Only: Loom & Notion Embed */}
+        {/* Admin Only: Video Embed Edit */}
         {isAdmin && (
           <div className="space-y-4 pt-4 border-t border-dark-100">
-            <div className="p-4 bg-dark-300/50 rounded-xl border border-dashed border-dark-100">
-              <p className="text-gray-400 text-sm mb-2">Loom Video Embed</p>
-              <input 
-                type="text" 
-                placeholder="Loom video linki..."
-                className="w-full bg-dark-100 border border-dark-100 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 text-sm"
-              />
+            <h4 className="text-white font-medium flex items-center gap-2">
+              <Edit2 className="w-4 h-4 text-primary-400" />
+              Video Yönetimi
+            </h4>
+            
+            {/* Replace / New Toggle */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setEmbedMode('replace')}
+                className={`flex-1 py-2 px-4 rounded-xl text-sm font-medium transition-all ${
+                  embedMode === 'replace' 
+                    ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30' 
+                    : 'bg-dark-100 text-gray-400 border border-dark-100'
+                }`}
+              >
+                Mevcut Videoyu Değiştir
+              </button>
+              <button
+                onClick={() => setEmbedMode('new')}
+                className={`flex-1 py-2 px-4 rounded-xl text-sm font-medium transition-all ${
+                  embedMode === 'new' 
+                    ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30' 
+                    : 'bg-dark-100 text-gray-400 border border-dark-100'
+                }`}
+              >
+                Yeni Video Ekle
+              </button>
             </div>
-            <div className="p-4 bg-dark-300/50 rounded-xl border border-dashed border-dark-100">
-              <p className="text-gray-400 text-sm mb-2">Notion Database Embed</p>
+            
+            {/* URL Input */}
+            <div className="relative">
               <input 
-                type="text" 
-                placeholder="Notion page linki..."
-                className="w-full bg-dark-100 border border-dark-100 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 text-sm"
+                type="text"
+                value={videoUrl}
+                onChange={(e) => setVideoUrl(e.target.value)}
+                placeholder="YouTube veya Loom linki yapıştırın..."
+                className="w-full bg-dark-100 border border-dark-100 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500"
               />
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex gap-2">
+                <Link className="w-5 h-5 text-gray-500" />
+              </div>
             </div>
+            
+            {hasVideo && (
+              <p className="text-emerald-400 text-sm flex items-center gap-1">
+                <CheckCircle2 className="w-4 h-4" />
+                Video algılandı - kaydet butonuna bas
+              </p>
+            )}
           </div>
         )}
       </motion.div>

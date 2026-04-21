@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   ArrowLeft, 
@@ -6,10 +7,19 @@ import {
 } from 'lucide-react';
 
 const SectionPage = ({ section, user, onNavigate }) => {
-  const completedSteps = user.completedSteps?.[section.id] || [];
+  // Local state for demo - in production this will come from Firebase
+  const [completedSteps, setCompletedSteps] = useState(user.completedSteps?.[section.id] || []);
   
   const handleStepClick = (step, index) => {
-    if (index === 0 || completedSteps.includes(section.steps[index - 1]?.id)) {
+    // First step is always accessible
+    if (index === 0) {
+      onNavigate('step', section, step);
+      return;
+    }
+    
+    // Check if previous step is completed
+    const prevStep = section.steps[index - 1];
+    if (prevStep && completedSteps.includes(prevStep.id)) {
       onNavigate('step', section, step);
     }
   };
@@ -26,7 +36,6 @@ const SectionPage = ({ section, user, onNavigate }) => {
   const totalCount = section.steps.length;
   const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
-  // Grid layout: 3 items per row on mobile, more on desktop
   return (
     <div className="p-6 md:p-8 pb-24 md:pb-8">
       {/* Header */}
@@ -75,7 +84,7 @@ const SectionPage = ({ section, user, onNavigate }) => {
         </div>
       </motion.div>
 
-      {/* Circle Navigation - Grid Layout */}
+      {/* Circle Grid - 3 per row mobile */}
       <motion.div 
         className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6 justify-items-center"
         initial={{ opacity: 0 }}
@@ -94,7 +103,7 @@ const SectionPage = ({ section, user, onNavigate }) => {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: index * 0.05 }}
             >
-              {/* Circle Button */}
+              {/* Circle */}
               <motion.button
                 onClick={() => isClickable && handleStepClick(step, index)}
                 disabled={!isClickable}
@@ -121,10 +130,10 @@ const SectionPage = ({ section, user, onNavigate }) => {
                 )}
               </motion.button>
               
-              {/* Step Number Label */}
+              {/* Label */}
               <p className={`
                 mt-3 text-xs md:text-sm font-medium
-                ${status === 'locked' ? 'text-gray-500' : 'text-gray-300'}
+                ${status === 'completed' ? 'text-emerald-400' : status === 'active' ? 'text-primary-400' : status === 'unlocked' ? 'text-gray-300' : 'text-gray-500'}
               `}>
                 {index + 1}. Adım
               </p>
