@@ -41,9 +41,9 @@ function App() {
 
   return (
     <div className="flex min-h-screen bg-dark-500">
-      <Sidebar user={user} currentView={currentView} onNavigate={(view, section, step) => navigateTo(view, section, step)} />
+      <Sidebar user={user} currentView={currentView} onNavigate={navigateTo} />
       
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 md:ml-64 min-h-screen">
         <AnimatePresence mode="wait">
           {currentView === 'dashboard' && (
             <motion.div
@@ -63,7 +63,7 @@ function App() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.25 }}
               className="min-h-full"
             >
               <SectionPage section={selectedSection} user={user} onNavigate={navigateTo} />
@@ -76,7 +76,7 @@ function App() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.25 }}
               className="min-h-full"
             >
               <StepPage section={selectedSection} step={selectedStep} user={user} onNavigate={navigateTo} />
