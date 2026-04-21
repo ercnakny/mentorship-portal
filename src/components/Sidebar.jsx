@@ -4,21 +4,25 @@ import {
   FolderOpen, 
   Settings,
   LogOut,
-  Target
+  Target,
+  Shield
 } from 'lucide-react';
 
 const Sidebar = ({ user, currentView, onNavigate }) => {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'sections', label: 'Bölümler', icon: FolderOpen },
-    { id: 'settings', label: 'Ayarlar', icon: Settings },
+    { id: 'admin', label: 'Admin Panel', icon: Shield, adminOnly: true },
   ];
 
   const isActive = (itemId) => {
     if (itemId === 'dashboard') return currentView === 'dashboard';
     if (itemId === 'sections') return ['sections', 'section', 'step'].includes(currentView);
+    if (itemId === 'admin') return currentView === 'admin';
     return false;
   };
+
+  const isAdmin = user.role === 'admin';
 
   return (
     <>
@@ -37,7 +41,9 @@ const Sidebar = ({ user, currentView, onNavigate }) => {
         {/* Navigation */}
         <nav className="flex-1 p-4">
           <ul className="space-y-2">
-            {menuItems.map((item) => {
+            {menuItems
+              .filter(item => !item.adminOnly || isAdmin)
+              .map((item) => {
               const Icon = item.icon;
               const active = isActive(item.id);
               
@@ -49,6 +55,8 @@ const Sidebar = ({ user, currentView, onNavigate }) => {
                         onNavigate('sections');
                       } else if (item.id === 'dashboard') {
                         onNavigate('dashboard');
+                      } else if (item.id === 'admin') {
+                        onNavigate('admin');
                       }
                     }}
                     className={`
@@ -91,7 +99,9 @@ const Sidebar = ({ user, currentView, onNavigate }) => {
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-dark-200 border-t border-dark-100 z-50">
         <div className="flex justify-around items-center py-3">
-          {menuItems.map((item) => {
+          {menuItems
+            .filter(item => !item.adminOnly || isAdmin)
+            .map((item) => {
             const Icon = item.icon;
             const active = isActive(item.id);
             
@@ -103,6 +113,8 @@ const Sidebar = ({ user, currentView, onNavigate }) => {
                     onNavigate('sections');
                   } else if (item.id === 'dashboard') {
                     onNavigate('dashboard');
+                  } else if (item.id === 'admin') {
+                    onNavigate('admin');
                   }
                 }}
                 className={`

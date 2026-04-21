@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   ArrowLeft, 
@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   Play
 } from 'lucide-react';
+import { saveUserProgress } from '../firebase/client';
 
 const StepPage = ({ section, step, user, onNavigate }) => {
   const [isCompleted, setIsCompleted] = useState(
@@ -21,8 +22,33 @@ const StepPage = ({ section, step, user, onNavigate }) => {
 
   const isAdmin = user.role === 'admin';
 
-  const handleComplete = () => {
+  // Check if this is the last step in the section
+  const isLastStep = currentIndex === section.steps.length - 1;
+  const allStepsCompleted = user.completedSteps?.[section.id]?.length === section.steps.length - 1;
+
+  const handleComplete = async () => {
     setIsCompleted(true);
+    
+    // Save to Firebase
+    if (user.uid) {
+      const updatedCompletedSteps = [...(user.completedSteps?.[section.id] || []), step.id];
+      await saveUserProgress(user.uid, {
+        completedSteps: {
+          ...user.completedSteps,
+          [section.id]: updatedCompletedSteps
+        }
+      });
+    }
+    
+    // If last step and section completed, mark section as completed
+    if (isLastStep) {
+      const updatedCompletedSections = [...(user.completedSections || []), section.id];
+      if (user.uid) {
+        await saveUserProgress(user.uid, {
+          completedSections: updatedCompletedSections
+        });
+      }
+    }
   };
 
   const handleNext = () => {

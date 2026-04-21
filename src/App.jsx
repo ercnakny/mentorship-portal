@@ -5,10 +5,12 @@ import SectionsOverview from './pages/SectionsOverview';
 import SectionPage from './pages/SectionPage';
 import StepPage from './pages/StepPage';
 import LoginPage from './pages/LoginPage';
+import AdminPanel from './pages/AdminPanel';
 import Sidebar from './components/Sidebar';
 
 // Demo modu
 const DEMO_USER = {
+  uid: 'demo-user-1',
   name: 'Ercan Akınay',
   email: 'akinay516@gmail.com',
   role: 'admin',
@@ -87,6 +89,17 @@ function App() {
               exit={{ opacity: 0, y: -20 }}
             >
               <StepPage section={selectedSection} step={selectedStep} user={user} onNavigate={navigateTo} />
+            </motion.div>
+          )}
+
+          {currentView === 'admin' && (
+            <motion.div
+              key="admin"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+            >
+              <AdminPanel user={user} onNavigate={navigateTo} />
             </motion.div>
           )}
         </AnimatePresence>
