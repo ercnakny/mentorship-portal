@@ -5,13 +5,20 @@ import {
   Lock,
   ChevronRight
 } from 'lucide-react';
-import { SECTIONS } from '../data/mentorshipSections';
 
 const SectionPage = ({ section, user, onNavigate }) => {
-  const completedSteps = user.completedSteps[section.id] || [];
+  const completedSteps = user.completedSteps?.[section.id] || [];
   
   const handleStepClick = (step, index) => {
-    if (index === 0 || completedSteps.includes(section.steps[index - 1]?.id)) {
+    // First step is always accessible
+    if (index === 0) {
+      onNavigate('step', section, step);
+      return;
+    }
+    
+    // Check if previous step is completed
+    const prevStep = section.steps[index - 1];
+    if (prevStep && completedSteps.includes(prevStep.id)) {
       onNavigate('step', section, step);
     }
   };
@@ -26,36 +33,36 @@ const SectionPage = ({ section, user, onNavigate }) => {
 
   const completedCount = completedSteps.length;
   const totalCount = section.steps.length;
+  const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
   return (
-    <div className="p-6 md:p-8">
+    <div className="p-6 md:p-8 pb-24 md:pb-8">
       {/* Header */}
       <motion.div 
-        className="mb-6"
+        className="mb-8"
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
       >
         <button 
-          onClick={() => onNavigate('dashboard')}
+          onClick={() => onNavigate('sections')}
           className="flex items-center gap-2 text-gray-400 hover:text-white mb-4 transition-colors text-sm"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Geri Dön</span>
+          <span>Bölümlere Dön</span>
         </button>
         
-        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
           <div>
             <h1 className="text-2xl md:text-4xl font-bold text-white mb-1">{section.title}</h1>
             <p className="text-gray-400 text-sm md:text-base">{section.subtitle}</p>
           </div>
-          <div className="flex items-center gap-2 bg-dark-200 px-4 py-2 rounded-xl border border-dark-100">
-            <span className="text-gray-400 text-sm">Süre:</span>
-            <span className="text-white font-semibold">{section.duration} gün</span>
+          <div className="flex items-center gap-3 bg-dark-200 px-4 py-2 rounded-xl border border-dark-100">
+            <span className="text-gray-400 text-sm">{section.duration} gün süre</span>
           </div>
         </div>
       </motion.div>
 
-      {/* Progress Bar */}
+      {/* Progress */}
       <motion.div 
         className="bg-dark-200 rounded-2xl p-4 mb-8 border border-dark-100"
         initial={{ opacity: 0, y: 10 }}
@@ -70,13 +77,13 @@ const SectionPage = ({ section, user, onNavigate }) => {
           <motion.div 
             className="h-full bg-gradient-to-r from-primary-500 to-primary-400 rounded-full"
             initial={{ width: 0 }}
-            animate={{ width: `${(completedCount / totalCount) * 100}%` }}
+            animate={{ width: `${progressPercent}%` }}
             transition={{ duration: 0.5 }}
           />
         </div>
       </motion.div>
 
-      {/* Step List - Card Style */}
+      {/* Step Cards */}
       <motion.div 
         className="space-y-3"
         initial={{ opacity: 0 }}
@@ -105,7 +112,7 @@ const SectionPage = ({ section, user, onNavigate }) => {
                 }
               `}
             >
-              {/* Step Number Circle */}
+              {/* Step Number */}
               <div className={`
                 w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold flex-shrink-0
                 ${status === 'completed' 

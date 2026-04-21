@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Dashboard from './pages/Dashboard';
+import SectionsOverview from './pages/SectionsOverview';
 import SectionPage from './pages/SectionPage';
 import StepPage from './pages/StepPage';
 import LoginPage from './pages/LoginPage';
@@ -51,9 +52,19 @@ function App() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="min-h-full"
             >
               <Dashboard user={user} onNavigate={navigateTo} />
+            </motion.div>
+          )}
+
+          {currentView === 'sections' && (
+            <motion.div
+              key="sections"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+            >
+              <SectionsOverview user={user} onNavigate={navigateTo} />
             </motion.div>
           )}
 
@@ -63,8 +74,6 @@ function App() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.25 }}
-              className="min-h-full"
             >
               <SectionPage section={selectedSection} user={user} onNavigate={navigateTo} />
             </motion.div>
@@ -76,8 +85,6 @@ function App() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.25 }}
-              className="min-h-full"
             >
               <StepPage section={selectedSection} step={selectedStep} user={user} onNavigate={navigateTo} />
             </motion.div>

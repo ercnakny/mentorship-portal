@@ -6,7 +6,6 @@ import {
   LogOut,
   Target
 } from 'lucide-react';
-import { SECTIONS } from '../data/mentorshipSections';
 
 const Sidebar = ({ user, currentView, onNavigate }) => {
   const menuItems = [
@@ -14,6 +13,12 @@ const Sidebar = ({ user, currentView, onNavigate }) => {
     { id: 'sections', label: 'Bölümler', icon: FolderOpen },
     { id: 'settings', label: 'Ayarlar', icon: Settings },
   ];
+
+  const isActive = (itemId) => {
+    if (itemId === 'dashboard') return currentView === 'dashboard';
+    if (itemId === 'sections') return ['sections', 'section', 'step'].includes(currentView);
+    return false;
+  };
 
   return (
     <>
@@ -34,22 +39,21 @@ const Sidebar = ({ user, currentView, onNavigate }) => {
           <ul className="space-y-2">
             {menuItems.map((item) => {
               const Icon = item.icon;
-              const isActive = currentView === item.id || 
-                (item.id === 'sections' && (currentView === 'section' || currentView === 'step'));
+              const active = isActive(item.id);
               
               return (
                 <li key={item.id}>
                   <button
                     onClick={() => {
                       if (item.id === 'sections') {
-                        onNavigate('section', SECTIONS[0]);
+                        onNavigate('sections');
                       } else if (item.id === 'dashboard') {
                         onNavigate('dashboard');
                       }
                     }}
                     className={`
                       w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
-                      ${isActive 
+                      ${active 
                         ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30' 
                         : 'text-gray-400 hover:text-white hover:bg-dark-100'
                       }
@@ -89,25 +93,21 @@ const Sidebar = ({ user, currentView, onNavigate }) => {
         <div className="flex justify-around items-center py-3">
           {menuItems.map((item) => {
             const Icon = item.icon;
-            const isActive = currentView === item.id ||
-              (item.id === 'sections' && (currentView === 'section' || currentView === 'step'));
+            const active = isActive(item.id);
             
             return (
               <button
                 key={item.id}
                 onClick={() => {
                   if (item.id === 'sections') {
-                    onNavigate('section', SECTIONS[0]);
+                    onNavigate('sections');
                   } else if (item.id === 'dashboard') {
                     onNavigate('dashboard');
                   }
                 }}
                 className={`
                   flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all
-                  ${isActive 
-                    ? 'text-primary-400' 
-                    : 'text-gray-400'
-                  }
+                  ${active ? 'text-primary-400' : 'text-gray-400'}
                 `}
               >
                 <Icon className="w-6 h-6" />
