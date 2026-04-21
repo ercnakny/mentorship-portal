@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, ChevronLeft, ChevronRight, CheckCircle2, Play, Plus, Edit2, Video, Link } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, CheckCircle2, Play, Plus, Edit2, Video, Trash2 } from 'lucide-react';
 
 const StepPage = ({ section, step, user, onNavigate }) => {
   const [isCompleted, setIsCompleted] = useState(
     user.completedSteps?.[section.id]?.includes(step.id) || false
   );
   const [videos, setVideos] = useState([{ id: 1, url: '' }]);
-  const [showAddVideo, setShowAddVideo] = useState(false);
   
   const currentIndex = section.steps.findIndex(s => s.id === step.id);
   const hasPrev = currentIndex > 0;
@@ -55,14 +54,17 @@ const StepPage = ({ section, step, user, onNavigate }) => {
 
   const addVideo = () => {
     setVideos([...videos, { id: Date.now(), url: '' }]);
-    setShowAddVideo(false);
   };
 
   const updateVideo = (id, url) => {
     setVideos(videos.map(v => v.id === id ? { ...v, url } : v));
   };
 
-  const hasVideos = videos.some(v => getEmbedType(v.url));
+  const deleteVideo = (id) => {
+    if (videos.length > 1) {
+      setVideos(videos.filter(v => v.id !== id));
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -89,7 +91,7 @@ const StepPage = ({ section, step, user, onNavigate }) => {
         </motion.div>
       </div>
 
-      {/* Content - Full Width with Centered Max Container */}
+      {/* Content */}
       <div className="flex-1 w-full max-w-4xl mx-auto px-6">
         <motion.div className="bg-dark-200 rounded-2xl p-6 md:p-8 border border-dark-100 mb-6" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           
@@ -97,55 +99,33 @@ const StepPage = ({ section, step, user, onNavigate }) => {
           <div className="space-y-4 mb-6">
             {videos.map((video, idx) => (
               <div key={video.id}>
-                {idx === 0 ? (
-                  // First video - replaceable
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-white font-semibold flex items-center gap-2">
-                        <Video className="w-5 h-5 text-primary-400" />
-                        Video {idx + 1}
-                      </h3>
-                      {isAdmin && (
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => {/* Replace mode - just update */}}
-                            className="text-primary-400 text-sm hover:text-primary-300 transition-colors flex items-center gap-1"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                            Değiştir
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                    <input 
-                      type="text"
-                      value={video.url}
-                      onChange={(e) => updateVideo(video.id, e.target.value)}
-                      placeholder="YouTube veya Loom linki..."
-                      className="w-full bg-dark-100 border border-dark-100 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500"
-                    />
-                  </div>
-                ) : (
-                  // Additional videos
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-white font-semibold flex items-center gap-2">
-                        <Video className="w-5 h-5 text-emerald-400" />
-                        Video {idx + 1}
-                      </h3>
-                    </div>
-                    <input 
-                      type="text"
-                      value={video.url}
-                      onChange={(e) => updateVideo(video.id, e.target.value)}
-                      placeholder="YouTube veya Loom linki..."
-                      className="w-full bg-dark-100 border border-dark-100 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500"
-                    />
-                  </div>
-                )}
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-white font-semibold flex items-center gap-2">
+                    <Video className="w-5 h-5 text-primary-400" />
+                    Video {idx + 1}
+                  </h3>
+                  {isAdmin && videos.length > 1 && (
+                    <button
+                      onClick={() => deleteVideo(video.id)}
+                      className="text-red-400 hover:text-red-300 transition-colors"
+                      title="Videoyu Sil"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+                
+                {/* Video URL Input */}
+                <input 
+                  type="text"
+                  value={video.url}
+                  onChange={(e) => updateVideo(video.id, e.target.value)}
+                  placeholder="YouTube veya Loom linki..."
+                  className="w-full bg-dark-100 border border-dark-100 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500"
+                />
                 
                 {/* Video Display */}
-                {getEmbedType(video.url) && (
+                {getEmbedType(video.url) ? (
                   <div className="aspect-video bg-dark-100 rounded-xl overflow-hidden mt-3">
                     {getYouTubeId(video.url) && (
                       <iframe 
@@ -167,7 +147,15 @@ const StepPage = ({ section, step, user, onNavigate }) => {
                       />
                     )}
                   </div>
-                )}
+                ) : video.url === '' && idx === 0 ? (
+                  /* Placeholder for first video */
+                  <div className="aspect-video bg-dark-100 rounded-xl flex items-center justify-center mt-3">
+                    <div className="text-center">
+                      <Play className="w-12 h-12 text-gray-500 mx-auto mb-2" />
+                      <p className="text-gray-500 text-sm">Video linki eklendiğinde görünecek</p>
+                    </div>
+                  </div>
+                ) : null}
               </div>
             ))}
           </div>
@@ -189,7 +177,7 @@ const StepPage = ({ section, step, user, onNavigate }) => {
           {/* Yapilacaklar */}
           <div>
             <h3 className="text-white font-semibold mb-3">Yapılacaklar</h3>
-            <div className="text-gray-400 mb-4">{step.description}</div>
+            <p className="text-gray-400 mb-4">{step.description}</p>
             <div className="prose prose-invert prose-sm max-w-none text-gray-300" dangerouslySetInnerHTML={{ __html: step.content || '<p>Bu adım için içerik yakında eklenecek.</p>' }} />
           </div>
         </motion.div>
