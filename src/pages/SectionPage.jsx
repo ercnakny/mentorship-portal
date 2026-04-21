@@ -1,9 +1,8 @@
 import { motion } from 'framer-motion';
 import { 
   ArrowLeft, 
-  ChevronRight, 
   CheckCircle2,
-  Play
+  Lock
 } from 'lucide-react';
 
 const SectionPage = ({ section, user, onNavigate }) => {
@@ -26,7 +25,7 @@ const SectionPage = ({ section, user, onNavigate }) => {
 
   return (
     <div className="min-h-screen p-6 md:p-12">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         {/* Header */}
         <motion.div 
           className="mb-10"
@@ -55,14 +54,14 @@ const SectionPage = ({ section, user, onNavigate }) => {
 
         {/* İlerleme */}
         <motion.div 
-          className="bg-dark-200 rounded-3xl p-6 mb-8 border border-dark-100"
+          className="bg-dark-200 rounded-3xl p-6 mb-12 border border-dark-100"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
           <div className="flex items-center justify-between mb-4">
             <span className="text-gray-400">İlerleme</span>
-            <span className="text-white font-semibold">{completedCount}/{totalCount} adım</span>
+            <span className="text-white font-semibold">{completedCount}/{totalCount} adım tamamlandı</span>
           </div>
           <div className="h-3 bg-dark-300 rounded-full overflow-hidden">
             <motion.div 
@@ -74,9 +73,9 @@ const SectionPage = ({ section, user, onNavigate }) => {
           </div>
         </motion.div>
 
-        {/* Adım Kartları - Grid Layout */}
+        {/* ÇEMBER NAVİGASYONU - Sadece Daireler */}
         <motion.div 
-          className="grid grid-cols-1 md:grid-cols-2 gap-4"
+          className="flex items-center justify-center gap-2 md:gap-4 overflow-x-auto pb-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
@@ -88,60 +87,68 @@ const SectionPage = ({ section, user, onNavigate }) => {
             return (
               <motion.div
                 key={step.id}
-                whileHover={isClickable ? { y: -4, scale: 1.02 } : {}}
-                whileTap={isClickable ? { scale: 0.98 } : {}}
-                onClick={() => isClickable && handleStepClick(step, index)}
-                className={`
-                  relative overflow-hidden rounded-2xl p-6 border transition-all duration-300 cursor-pointer
-                  ${status === 'completed' 
-                    ? 'bg-gradient-to-br from-emerald-500/10 to-transparent border-emerald-500/30'
-                    : status === 'active'
-                      ? 'bg-gradient-to-br from-primary-500/10 to-transparent border-primary-500/50 shadow-lg shadow-primary-500/10'
-                      : status === 'unlocked'
-                        ? 'bg-dark-200 border-dark-100 hover:border-primary-500/50'
-                        : 'bg-dark-300/50 border-dark-100 cursor-not-allowed opacity-50'
-                  }
-                `}
+                className="relative flex flex-col items-center flex-shrink-0"
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: index * 0.05 }}
               >
-                <div className="flex items-start gap-4">
-                  {/* Numaralandırılmış Çember */}
+                {/* Bağlantı Çizgisi */}
+                {index < section.steps.length - 1 && (
                   <div className={`
-                    relative w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold flex-shrink-0
+                    absolute top-1/2 left-full w-6 md:w-8 h-1 -translate-y-1/2
+                    ${status === 'completed' ? 'bg-primary-500' : 'bg-dark-300'}
+                  `} />
+                )}
+                
+                {/* Çember */}
+                <motion.button
+                  onClick={() => isClickable && handleStepClick(step, index)}
+                  disabled={!isClickable}
+                  whileHover={isClickable ? { scale: 1.15 } : {}}
+                  whileTap={isClickable ? { scale: 0.9 } : {}}
+                  className={`
+                    w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center text-2xl md:text-3xl font-bold transition-all duration-300 shadow-lg
                     ${status === 'completed' 
-                      ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/30'
+                      ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-emerald-500/40'
                       : status === 'active'
-                        ? 'bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/30'
+                        ? 'bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-primary-500/40 ring-4 ring-primary-500/30'
                         : status === 'unlocked'
-                          ? 'bg-dark-100 text-white border-2 border-primary-500/50'
-                          : 'bg-dark-100 text-gray-500 border-2 border-dark-100'
+                          ? 'bg-dark-200 text-white border-4 border-primary-500/50 hover:border-primary-500'
+                          : 'bg-dark-300 text-gray-500 cursor-not-allowed border-4 border-dark-100'
                     }
-                  `}>
-                    {status === 'completed' ? (
-                      <CheckCircle2 className="w-7 h-7" />
-                    ) : (
-                      <span>{index + 1}</span>
-                    )}
-                    
-                    {/* Aktif Badge */}
-                    {status === 'active' && (
-                      <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary-400 rounded-full animate-pulse" />
-                    )}
-                  </div>
-                  
-                  {/* İçerik */}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-white font-semibold text-lg mb-1">{step.title}</h3>
-                    <p className="text-gray-400 text-sm">{step.description}</p>
-                  </div>
-                  
-                  {/* İkon */}
-                  {isClickable && (
-                    <ChevronRight className={`w-5 h-5 flex-shrink-0 ${status === 'completed' ? 'text-emerald-400' : 'text-gray-500'}`} />
+                  `}
+                >
+                  {status === 'completed' ? (
+                    <CheckCircle2 className="w-8 h-8 md:w-10 md:h-10" />
+                  ) : status === 'locked' ? (
+                    <Lock className="w-6 h-6 md:w-7 md:h-7" />
+                  ) : (
+                    <span>{index + 1}</span>
                   )}
-                </div>
+                </motion.button>
+                
+                {/* Alt Etiket */}
+                <p className={`
+                  mt-3 text-xs md:text-sm font-medium text-center
+                  ${status === 'locked' ? 'text-gray-500' : 'text-gray-300'}
+                `}>
+                  {index + 1}. Adım
+                </p>
               </motion.div>
             );
           })}
+        </motion.div>
+
+        {/* Alt Açıklama */}
+        <motion.div 
+          className="text-center mt-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+        >
+          <p className="text-gray-500 text-sm">
+            Bir adıma tıklayarak detayları görüntüleyebilirsiniz
+          </p>
         </motion.div>
       </div>
     </div>
