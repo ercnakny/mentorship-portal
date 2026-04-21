@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, ChevronLeft, ChevronRight, CheckCircle2, Play, Plus, Video, Trash2 } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, CheckCircle2, Play, Plus, Video, Trash2, ExternalLink, FileText, Upload, X } from 'lucide-react';
 
 const StepPage = ({ section, step, user, onNavigate }) => {
   const [isCompleted, setIsCompleted] = useState(
     user.completedSteps?.[section.id]?.includes(step.id) || false
   );
   const [videos, setVideos] = useState([{ id: 1, url: '' }]);
+  const [links, setLinks] = useState([{ id: 1, url: '', title: '' }]);
+  const [pdfs, setPdfs] = useState([{ id: 1, name: '', file: null }]);
   
   const currentIndex = section.steps.findIndex(s => s.id === step.id);
   const hasPrev = currentIndex > 0;
@@ -52,6 +54,7 @@ const StepPage = ({ section, step, user, onNavigate }) => {
     return null;
   };
 
+  // Video functions
   const addVideo = () => {
     setVideos([...videos, { id: Date.now(), url: '' }]);
   };
@@ -66,9 +69,46 @@ const StepPage = ({ section, step, user, onNavigate }) => {
     }
   };
 
+  // Link functions
+  const addLink = () => {
+    setLinks([...links, { id: Date.now(), url: '', title: '' }]);
+  };
+
+  const updateLink = (id, field, value) => {
+    setLinks(links.map(l => l.id === id ? { ...l, [field]: value } : l));
+  };
+
+  const deleteLink = (id) => {
+    if (links.length > 1) {
+      setLinks(links.filter(l => l.id !== id));
+    }
+  };
+
+  // PDF functions
+  const handlePdfUpload = (id, file) => {
+    setPdfs(pdfs.map(p => p.id === id ? { ...p, name: file.name, file: URL.createObjectURL(file) } : p));
+  };
+
+  const addPdf = () => {
+    setPdfs([...pdfs, { id: Date.now(), name: '', file: null }]);
+  };
+
+  const deletePdf = (id) => {
+    if (pdfs.length > 1) {
+      setPdfs(pdfs.filter(p => p.id !== id));
+    }
+  };
+
+  // Parse content to make links clickable
+  const renderContent = (content) => {
+    if (!content) return null;
+    // Replace URLs with clickable links
+    const urlRegex = /(https?:\/\/[^\s<]+)/g;
+    return content.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-primary-400 hover:text-primary-300 underline decoration-primary-400/50 hover:decoration-primary-300 transition-colors">$1</a>');
+  };
+
   return (
     <div className="min-h-screen p-6 md:p-8">
-      {/* Centered Content */}
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <motion.div className="mb-6" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
@@ -94,89 +134,162 @@ const StepPage = ({ section, step, user, onNavigate }) => {
         {/* Content Card */}
         <motion.div className="bg-dark-200 rounded-2xl p-6 md:p-8 border border-dark-100 mb-6" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           
-          {/* Videos */}
-          <div className="space-y-4 mb-6">
-            {videos.map((video, idx) => (
-              <div key={video.id}>
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-white font-semibold flex items-center gap-2">
-                    <Video className="w-5 h-5 text-primary-400" />
-                    Video {idx + 1}
-                  </h3>
-                  {isAdmin && videos.length > 1 && (
-                    <button
-                      onClick={() => deleteVideo(video.id)}
-                      className="text-red-400 hover:text-red-300 transition-colors"
-                      title="Videoyu Sil"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+          {/* Videos Section */}
+          <div className="mb-6">
+            <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+              <Video className="w-5 h-5 text-primary-400" />
+              Videolar
+            </h3>
+            <div className="space-y-4">
+              {videos.map((video, idx) => (
+                <div key={video.id}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-gray-400 text-sm">Video {idx + 1}</span>
+                    {isAdmin && videos.length > 1 && (
+                      <button onClick={() => deleteVideo(video.id)} className="text-red-400 hover:text-red-300">
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                  <input 
+                    type="text"
+                    value={video.url}
+                    onChange={(e) => updateVideo(video.id, e.target.value)}
+                    placeholder="YouTube veya Loom linki..."
+                    className="w-full bg-dark-100 border border-dark-100 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500"
+                  />
+                  {getEmbedType(video.url) && (
+                    <div className="aspect-video bg-dark-100 rounded-xl overflow-hidden mt-3">
+                      {getYouTubeId(video.url) && (
+                        <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${getYouTubeId(video.url)}`} frameBorder="0" allowFullScreen />
+                      )}
+                      {getLoomId(video.url) && (
+                        <iframe className="w-full h-full" src={`https://www.loom.com/embed/${getLoomId(video.url)}`} frameBorder="0" allowFullScreen />
+                      )}
+                    </div>
                   )}
                 </div>
-                
-                {/* Video URL Input */}
-                <input 
-                  type="text"
-                  value={video.url}
-                  onChange={(e) => updateVideo(video.id, e.target.value)}
-                  placeholder="YouTube veya Loom linki..."
-                  className="w-full bg-dark-100 border border-dark-100 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500"
-                />
-                
-                {/* Video Display or Placeholder */}
-                {getEmbedType(video.url) ? (
-                  <div className="aspect-video bg-dark-100 rounded-xl overflow-hidden mt-3">
-                    {getYouTubeId(video.url) && (
-                      <iframe 
-                        className="w-full h-full"
-                        src={`https://www.youtube.com/embed/${getYouTubeId(video.url)}`}
-                        title="YouTube video"
-                        frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                      />
-                    )}
-                    {getLoomId(video.url) && (
-                      <iframe 
-                        className="w-full h-full"
-                        src={`https://www.loom.com/embed/${getLoomId(video.url)}`}
-                        title="Loom video"
-                        frameBorder="0"
-                        allowFullScreen
-                      />
-                    )}
-                  </div>
-                ) : (
-                  <div className="aspect-video bg-dark-100 rounded-xl flex items-center justify-center mt-3">
-                    <div className="text-center">
-                      <Play className="w-12 h-12 text-gray-500 mx-auto mb-2" />
-                      <p className="text-gray-500 text-sm">Video linki eklendiğinde görünecek</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
+              ))}
+            </div>
+            {isAdmin && (
+              <button onClick={addVideo} className="mt-3 w-full py-2 border-2 border-dashed border-dark-100 rounded-xl text-gray-400 hover:text-white hover:border-primary-500/50 flex items-center justify-center gap-2 text-sm transition-colors">
+                <Plus className="w-4 h-4" />
+                Video Ekle
+              </button>
+            )}
           </div>
 
-          {/* Add Video Button */}
-          {isAdmin && (
-            <button
-              onClick={addVideo}
-              className="w-full py-3 border-2 border-dashed border-dark-100 rounded-xl text-gray-400 hover:text-white hover:border-primary-500/50 transition-colors flex items-center justify-center gap-2"
-            >
-              <Plus className="w-5 h-5" />
-              Yeni Video Ekle
-            </button>
-          )}
+          {/* Links Section */}
+          <div className="mb-6 pt-6 border-t border-dark-100">
+            <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+              <ExternalLink className="w-5 h-5 text-primary-400" />
+              Linkler
+            </h3>
+            <div className="space-y-3">
+              {links.map((link) => (
+                <div key={link.id} className="bg-dark-100 rounded-xl p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-gray-400 text-sm">Link {links.indexOf(link) + 1}</span>
+                    {isAdmin && links.length > 1 && (
+                      <button onClick={() => deleteLink(link.id)} className="text-red-400 hover:text-red-300">
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                  <input 
+                    type="text"
+                    value={link.title}
+                    onChange={(e) => updateLink(link.id, 'title', e.target.value)}
+                    placeholder="Link başlığı (opsiyonel)"
+                    className="w-full bg-dark-200 border border-dark-200 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 text-sm mb-2"
+                  />
+                  <input 
+                    type="url"
+                    value={link.url}
+                    onChange={(e) => updateLink(link.id, 'url', e.target.value)}
+                    placeholder="https://..."
+                    className="w-full bg-dark-200 border border-dark-200 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 text-sm"
+                  />
+                  {link.url && (
+                    <a 
+                      href={link.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="mt-2 inline-flex items-center gap-1 text-primary-400 hover:text-primary-300 text-sm"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      {link.title || link.url}
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+            {isAdmin && (
+              <button onClick={addLink} className="mt-3 w-full py-2 border-2 border-dashed border-dark-100 rounded-xl text-gray-400 hover:text-white hover:border-primary-500/50 flex items-center justify-center gap-2 text-sm transition-colors">
+                <Plus className="w-4 h-4" />
+                Link Ekle
+              </button>
+            )}
+          </div>
 
-          {/* Divider */}
-          <div className="border-t border-dark-100 my-6"></div>
+          {/* PDFs Section */}
+          <div className="mb-6 pt-6 border-t border-dark-100">
+            <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+              <FileText className="w-5 h-5 text-primary-400" />
+              PDF Dosyaları
+            </h3>
+            <div className="space-y-3">
+              {pdfs.map((pdf) => (
+                <div key={pdf.id} className="bg-dark-100 rounded-xl p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-gray-400 text-sm">PDF {pdfs.indexOf(pdf) + 1}</span>
+                    {isAdmin && pdfs.length > 1 && (
+                      <button onClick={() => deletePdf(pdf.id)} className="text-red-400 hover:text-red-300">
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                  {pdf.file ? (
+                    <div className="flex items-center justify-between bg-dark-200 rounded-lg p-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <FileText className="w-5 h-5 text-primary-400 flex-shrink-0" />
+                        <span className="text-white text-sm truncate">{pdf.name}</span>
+                      </div>
+                      <a href={pdf.file} download={pdf.name} className="text-primary-400 hover:text-primary-300 flex-shrink-0">
+                        <Upload className="w-4 h-4" />
+                      </a>
+                    </div>
+                  ) : (
+                    <label className="flex items-center justify-center gap-2 py-4 border-2 border-dashed border-dark-200 rounded-lg cursor-pointer hover:border-primary-500/50 transition-colors">
+                      <Upload className="w-4 h-4 text-gray-500" />
+                      <span className="text-gray-500 text-sm">PDF seç</span>
+                      <input 
+                        type="file" 
+                        accept=".pdf"
+                        className="hidden"
+                        onChange={(e) => e.target.files[0] && handlePdfUpload(pdf.id, e.target.files[0])}
+                      />
+                    </label>
+                  )}
+                </div>
+              ))}
+            </div>
+            {isAdmin && (
+              <button onClick={addPdf} className="mt-3 w-full py-2 border-2 border-dashed border-dark-100 rounded-xl text-gray-400 hover:text-white hover:border-primary-500/50 flex items-center justify-center gap-2 text-sm transition-colors">
+                <Plus className="w-4 h-4" />
+                PDF Ekle
+              </button>
+            )}
+          </div>
 
-          {/* Yapilacaklar */}
-          <div>
-            <h3 className="text-white font-semibold mb-3">Yapılacaklar</h3>
+          {/* Yapilacaklar Section */}
+          <div className="pt-6 border-t border-dark-100">
+            <h3 className="text-white font-semibold mb-4">Yapılacaklar</h3>
             <p className="text-gray-400 mb-4">{step.description}</p>
-            <div className="prose prose-invert prose-sm max-w-none text-gray-300" dangerouslySetInnerHTML={{ __html: step.content || '<p>Bu adım için içerik yakında eklenecek.</p>' }} />
+            <div 
+              className="prose prose-invert prose-sm max-w-none text-gray-300"
+              dangerouslySetInnerHTML={{ __html: renderContent(step.content) || '<p class="text-gray-500">Bu adım için içerik yakında eklenecek.</p>' }}
+            />
           </div>
         </motion.div>
 
