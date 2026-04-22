@@ -131,7 +131,8 @@ function App() {
     <div className="flex min-h-screen bg-dark-500">
       <Sidebar user={user} currentView={currentView} onNavigate={navigateTo} />
       
-      <main className="flex-1 md:ml-64 min-h-screen">
+      <main className="flex-1 md:ml-64 min-h-screen overflow-y-auto">
+        <div className="w-full" style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px', boxSizing: 'border-box' }}>
         <AnimatePresence mode="wait">
           {currentView === 'dashboard' && (
             <motion.div
@@ -188,6 +189,7 @@ function App() {
             </motion.div>
           )}
         </AnimatePresence>
+        </div>
       </main>
     </div>
   );

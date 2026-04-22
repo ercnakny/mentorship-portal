@@ -3,14 +3,14 @@ import { motion } from 'framer-motion';
 import { AlertCircle, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { signInWithEmail } from '../firebase/client';
 
-const LoginPage = () => {
+export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleEmailLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
@@ -18,116 +18,244 @@ const LoginPage = () => {
     try {
       await signInWithEmail(email, password);
     } catch (err) {
-      let errorMessage = 'Giriş yapılamadı.';
-      
       if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
-        errorMessage = 'E-posta veya şifre hatalı.';
+        setError('E-posta veya şifre hatalı.');
       } else if (err.code === 'auth/user-not-found') {
-        errorMessage = 'Bu e-posta ile kayıtlı kullanıcı yok.';
+        setError('Bu e-posta ile kayıtlı kullanıcı yok.');
       } else if (err.code === 'auth/invalid-email') {
-        errorMessage = 'Geçersiz e-posta adresi.';
+        setError('Geçersiz e-posta adresi.');
       } else if (err.code === 'auth/too-many-requests') {
-        errorMessage = 'Çok fazla deneme. Daha sonra tekrar deneyin.';
+        setError('Çok fazla deneme. Daha sonra tekrar deneyin.');
+      } else {
+        setError('Giriş yapılamadı.');
       }
-      
-      setError(errorMessage);
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-dark-500 flex items-center justify-center p-6">
+    <div style={{
+      minHeight: '100vh',
+      backgroundColor: '#0a0f1a',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '24px'
+    }}>
       {/* Background Effects */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-500/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary-600/5 rounded-full blur-3xl" />
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+        <div style={{
+          position: 'absolute',
+          top: '25%',
+          left: '25%',
+          width: '384px',
+          height: '384px',
+          backgroundColor: 'rgba(14, 165, 233, 0.05)',
+          borderRadius: '9999px',
+          filter: 'blur(96px)'
+        }} />
+        <div style={{
+          position: 'absolute',
+          bottom: '25%',
+          right: '25%',
+          width: '384px',
+          height: '384px',
+          backgroundColor: 'rgba(2, 132, 199, 0.05)',
+          borderRadius: '9999px',
+          filter: 'blur(96px)'
+        }} />
       </div>
 
-      {/* Main Content */}
-      <motion.div 
-        className="relative w-full max-w-md"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
+      {/* Content */}
+      <div style={{ position: 'relative', width: '100%', maxWidth: '448px' }}>
         {/* Logo */}
         <motion.div 
-          className="w-20 h-20 mx-auto mb-8 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center shadow-2xl shadow-primary-500/20"
+          style={{ display: 'flex', justifyContent: 'center', marginBottom: '32px' }}
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+          transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
         >
-          <span className="text-4xl">🎯</span>
+          <div style={{
+            width: '80px',
+            height: '80px',
+            borderRadius: '16px',
+            background: 'linear-gradient(to bottom right, #0ea5e9, #0284c7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 25px 50px -12px rgba(14, 165, 233, 0.2)'
+          }}>
+            <span style={{ fontSize: '40px' }}>🎯</span>
+          </div>
         </motion.div>
 
         {/* Title */}
         <motion.div
-          className="text-center mb-10"
+          style={{ textAlign: 'center', marginBottom: '32px' }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.2 }}
         >
-          <h1 className="text-4xl font-bold text-white mb-3">Akınay Mentörlük</h1>
-          <p className="text-gray-400 text-base">Mentörlük sürecinizi yönetin</p>
+          <h1 style={{ fontSize: '36px', fontWeight: 'bold', color: 'white', marginBottom: '8px' }}>Akınay Mentörlük</h1>
+          <p style={{ fontSize: '16px', color: '#9ca3af' }}>Mentörlük sürecinizi yönetin</p>
         </motion.div>
 
-        {/* Login Form */}
+        {/* Form */}
         <motion.form
-          onSubmit={handleEmailLogin}
-          className="space-y-5"
+          onSubmit={handleSubmit}
+          style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
+          transition={{ delay: 0.3 }}
         >
-          {/* Error */}
+          {/* Error Alert */}
           {error && (
-            <motion.div 
-              className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center gap-3"
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
-              <p className="text-red-400 text-sm">{error}</p>
-            </motion.div>
+            <div style={{
+              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid rgba(239, 68, 68, 0.2)',
+              borderRadius: '12px',
+              padding: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px'
+            }} role="alert">
+              <AlertCircle style={{ width: '20px', height: '20px', color: '#f87171', flexShrink: 0 }} />
+              <p style={{ color: '#f87171', fontSize: '14px' }}>{error}</p>
+            </div>
           )}
 
-          {/* Email Input */}
-          <div className="relative">
-            <div className="flex items-center gap-3 mb-2">
-              <Mail className="w-4 h-4 text-gray-500" />
-              <span className="text-gray-400 text-sm">E-posta</span>
+          {/* Email Field */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <label htmlFor="email" style={{ fontSize: '14px', fontWeight: 500, color: '#e5e7eb' }}>
+              E-posta
+            </label>
+            <div style={{ position: 'relative' }}>
+              <div style={{
+                position: 'absolute',
+                left: '16px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: '20px',
+                height: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                pointerEvents: 'none',
+                zIndex: 10
+              }}>
+                <Mail style={{ width: '20px', height: '20px', color: '#9ca3af' }} />
+              </div>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="E-posta adresinizi girin"
+                required
+                autoComplete="email"
+                style={{
+                  width: '100%',
+                  height: '48px',
+                  backgroundColor: '#151c2c',
+                  border: '2px solid #1e293b',
+                  borderRadius: '12px',
+                  paddingLeft: '56px',
+                  paddingRight: '16px',
+                  fontSize: '16px',
+                  color: 'white',
+                  outline: 'none',
+                  transition: 'all 0.2s'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#0ea5e9';
+                  e.target.style.boxShadow = '0 0 0 3px rgba(14, 165, 233, 0.1)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#1e293b';
+                  e.target.style.boxShadow = 'none';
+                }}
+              />
             </div>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="E-posta adresinizi girin"
-              required
-              className="w-full bg-dark-300 border-2 border-dark-100 rounded-xl px-4 py-3.5 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 transition-colors text-base"
-            />
           </div>
 
-          {/* Password Input */}
-          <div className="relative">
-            <div className="flex items-center gap-3 mb-2">
-              <Lock className="w-4 h-4 text-gray-500" />
-              <span className="text-gray-400 text-sm">Şifre</span>
-            </div>
-            <div className="relative">
+          {/* Password Field */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <label htmlFor="password" style={{ fontSize: '14px', fontWeight: 500, color: '#e5e7eb' }}>
+              Şifre
+            </label>
+            <div style={{ position: 'relative' }}>
+              <div style={{
+                position: 'absolute',
+                left: '16px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: '20px',
+                height: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                pointerEvents: 'none',
+                zIndex: 10
+              }}>
+                <Lock style={{ width: '20px', height: '20px', color: '#9ca3af' }} />
+              </div>
               <input
+                id="password"
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Şifrenizi girin"
                 required
-                className="w-full bg-dark-300 border-2 border-dark-100 rounded-xl px-4 py-3.5 pr-12 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 transition-colors text-base"
+                autoComplete="current-password"
+                style={{
+                  width: '100%',
+                  height: '48px',
+                  backgroundColor: '#151c2c',
+                  border: '2px solid #1e293b',
+                  borderRadius: '12px',
+                  paddingLeft: '56px',
+                  paddingRight: '56px',
+                  fontSize: '16px',
+                  color: 'white',
+                  outline: 'none',
+                  transition: 'all 0.2s'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#0ea5e9';
+                  e.target.style.boxShadow = '0 0 0 3px rgba(14, 165, 233, 0.1)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#1e293b';
+                  e.target.style.boxShadow = 'none';
+                }}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors"
+                style={{
+                  position: 'absolute',
+                  right: '16px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: '#9ca3af',
+                  padding: '4px',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'color 0.2s'
+                }}
+                aria-label={showPassword ? 'Şifreyi gizle' : 'Şifreyi göster'}
+                onMouseEnter={(e) => e.currentTarget.style.color = '#d1d5db'}
+                onMouseLeave={(e) => e.currentTarget.style.color = '#9ca3af'}
               >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                {showPassword ? (
+                  <EyeOff style={{ width: '20px', height: '20px' }} />
+                ) : (
+                  <Eye style={{ width: '20px', height: '20px' }} />
+                )}
               </button>
             </div>
           </div>
@@ -136,15 +264,40 @@ const LoginPage = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-400 hover:to-primary-500 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 text-base mt-6"
+            style={{
+              width: '100%',
+              height: '48px',
+              backgroundColor: loading ? '#0ea5e9' : '#0ea5e9',
+              color: 'white',
+              fontWeight: 600,
+              borderRadius: '12px',
+              border: 'none',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              opacity: loading ? 0.5 : 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              marginTop: '32px',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              if (!loading) e.currentTarget.style.backgroundColor = '#0284c7';
+            }}
+            onMouseLeave={(e) => {
+              if (!loading) e.currentTarget.style.backgroundColor = '#0ea5e9';
+            }}
           >
             {loading ? (
               <>
-                <motion.div
-                  className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                />
+                <div style={{
+                  width: '20px',
+                  height: '20px',
+                  border: '2px solid rgba(255,255,255,0.3)',
+                  borderTopColor: 'white',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite'
+                }} />
                 Giriş yapılıyor...
               </>
             ) : (
@@ -153,23 +306,24 @@ const LoginPage = () => {
           </button>
         </motion.form>
 
-        {/* Info Text */}
-        <p className="text-center text-gray-500 text-sm mt-8">
-          Sadece yetkili kullanıcılar giriş yapabilir
-        </p>
-
         {/* Footer */}
-        <motion.p
-          className="text-center text-gray-600 text-sm mt-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-        >
-          © 2026 Akınay Mentörlük
-        </motion.p>
-      </motion.div>
+        <div style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <p style={{ textAlign: 'center', fontSize: '14px', color: '#6b7280' }}>
+            Sadece yetkili kullanıcılar giriş yapabilir
+          </p>
+          <p style={{ textAlign: 'center', fontSize: '14px', color: '#4b5563' }}>
+            © 2026 Akınay Mentörlük
+          </p>
+        </div>
+      </div>
+
+      {/* Spin Animation */}
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
-};
-
-export default LoginPage;
+}

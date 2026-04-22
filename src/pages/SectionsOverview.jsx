@@ -31,29 +31,124 @@ const SectionsOverview = ({ user, onNavigate }) => {
     return 'locked';
   };
 
+  // Styles
+  const pageStyle = { padding: '24px', maxWidth: '100%' };
+  const cardStyle = {
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '16px',
+    padding: '20px',
+    borderRadius: '16px',
+    transition: 'all 0.2s',
+    textAlign: 'left',
+    border: '1px solid'
+  };
+
+  const getCardStyle = (status) => {
+    switch (status) {
+      case 'completed':
+        return {
+          ...cardStyle,
+          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+          borderColor: 'rgba(16, 185, 129, 0.3)',
+          cursor: 'pointer'
+        };
+      case 'active':
+        return {
+          ...cardStyle,
+          backgroundColor: 'rgba(14, 165, 233, 0.1)',
+          borderColor: 'rgba(14, 165, 233, 0.5)',
+          cursor: 'pointer',
+          boxShadow: '0 4px 12px rgba(14, 165, 233, 0.1)'
+        };
+      case 'unlocked':
+        return {
+          ...cardStyle,
+          backgroundColor: '#1a2234',
+          borderColor: '#2d3a4f',
+          cursor: 'pointer'
+        };
+      case 'locked':
+      default:
+        return {
+          ...cardStyle,
+          backgroundColor: 'rgba(21, 28, 44, 0.5)',
+          borderColor: '#2d3a4f',
+          opacity: 0.6,
+          cursor: 'not-allowed'
+        };
+    }
+  };
+
+  const getIconBgStyle = (status) => {
+    switch (status) {
+      case 'completed':
+        return { backgroundColor: 'rgba(16, 185, 129, 0.2)' };
+      case 'active':
+        return { backgroundColor: 'rgba(14, 165, 233, 0.2)' };
+      default:
+        return { backgroundColor: '#1e293b' };
+    }
+  };
+
+  const getIconColor = (status) => {
+    switch (status) {
+      case 'completed':
+        return '#34d399';
+      case 'active':
+        return '#38bdf8';
+      default:
+        return '#6b7280';
+    }
+  };
+
   return (
-    <div className="p-6 md:p-8">
+    <div style={pageStyle}>
       {/* Header */}
       <motion.div 
-        className="mb-8"
+        style={{ marginBottom: '32px' }}
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
       >
         <button 
           onClick={() => onNavigate('dashboard')}
-          className="flex items-center gap-2 text-gray-400 hover:text-white mb-6 transition-colors text-sm"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            color: '#9ca3af',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            fontSize: '14px',
+            marginBottom: '24px',
+            padding: 0,
+            transition: 'color 0.2s'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
+          onMouseLeave={(e) => e.currentTarget.style.color = '#9ca3af'}
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft style={{ width: '16px', height: '16px' }} />
           <span>Geri Dön</span>
         </button>
         
-        <h1 className="text-2xl md:text-4xl font-bold text-white mb-2">Bölümler</h1>
-        <p className="text-gray-400">Mentörlük sürecindeki tüm bölümler</p>
+        <h1 style={{ fontSize: '32px', fontWeight: 'bold', color: 'white', marginBottom: '8px' }}>
+          Bölümler
+        </h1>
+        <p style={{ color: '#9ca3af', fontSize: '18px' }}>
+          Mentörlük sürecindeki tüm bölümler
+        </p>
       </motion.div>
 
-      {/* Section List */}
+      {/* Section List - Responsive Grid */}
       <motion.div 
-        className="space-y-3"
+        style={{ 
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
+          gap: '20px'
+        }}
+        className="grid-cols-1 lg:grid-cols-2"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.1 }}
@@ -69,59 +164,51 @@ const SectionsOverview = ({ user, onNavigate }) => {
               onClick={() => isClickable && onNavigate('section', section)}
               disabled={!isClickable}
               whileHover={isClickable ? { x: 4 } : {}}
-              className={`
-                w-full flex items-center gap-4 p-4 md:p-5 rounded-2xl border transition-all duration-200 text-left
-                ${status === 'completed' 
-                  ? 'bg-emerald-500/10 border-emerald-500/30'
-                  : status === 'active'
-                    ? 'bg-primary-500/10 border-primary-500/50 shadow-lg shadow-primary-500/10'
-                    : status === 'unlocked'
-                      ? 'bg-dark-200 border-dark-100 hover:border-primary-500/50'
-                      : 'bg-dark-300/50 border-dark-100 opacity-60 cursor-not-allowed'
-                }
-              `}
+              style={getCardStyle(status)}
             >
               {/* Icon Circle */}
-              <div className={`
-                w-12 h-12 md:w-14 md:h-14 rounded-xl flex items-center justify-center flex-shrink-0
-                ${status === 'completed' 
-                  ? 'bg-emerald-500/20'
-                  : status === 'active'
-                    ? 'bg-primary-500/20'
-                    : 'bg-dark-100'
-                }
-              `}>
-                <Icon className={`w-6 h-6 md:w-7 md:h-7 ${
-                  status === 'completed' 
-                    ? 'text-emerald-400' 
-                    : status === 'active'
-                      ? 'text-primary-400'
-                      : 'text-gray-500'
-                }`} />
+              <div style={{
+                ...getIconBgStyle(status),
+                width: '56px',
+                height: '56px',
+                borderRadius: '14px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0
+              }}>
+                <Icon style={{ width: '28px', height: '28px', color: getIconColor(status) }} />
               </div>
               
               {/* Content */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className={`font-semibold text-base md:text-lg ${status === 'locked' ? 'text-gray-500' : 'text-white'}`}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                  <h3 style={{ 
+                    fontWeight: 600, 
+                    fontSize: '18px', 
+                    color: status === 'locked' ? '#6b7280' : 'white'
+                  }}>
                     {index + 1}. {section.title}
                   </h3>
-                  {status === 'completed' && <CheckCircle2 className="w-5 h-5 text-emerald-400" />}
-                  {status === 'locked' && <Lock className="w-4 h-4 text-gray-500" />}
+                  {status === 'completed' && <CheckCircle2 style={{ width: '24px', height: '24px', color: '#34d399' }} />}
+                  {status === 'locked' && <Lock style={{ width: '20px', height: '20px', color: '#6b7280' }} />}
                 </div>
-                <p className="text-gray-500 text-sm">{section.subtitle}</p>
-                <div className="flex items-center gap-4 mt-2">
-                  <span className="text-gray-500 text-xs">{section.steps.length} adım</span>
-                  <span className="text-gray-500 text-xs">•</span>
-                  <span className="text-gray-500 text-xs">{section.duration} gün</span>
+                <p style={{ color: '#6b7280', fontSize: '15px' }}>{section.subtitle}</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '12px' }}>
+                  <span style={{ color: '#6b7280', fontSize: '14px' }}>{section.steps.length} adım</span>
+                  <span style={{ color: '#6b7280', fontSize: '14px' }}>•</span>
+                  <span style={{ color: '#6b7280', fontSize: '14px' }}>{section.duration} gün</span>
                 </div>
               </div>
               
               {/* Arrow */}
               {isClickable && (
-                <ChevronRight className={`w-5 h-5 flex-shrink-0 ${
-                  status === 'completed' ? 'text-emerald-400' : 'text-gray-500'
-                }`} />
+                <ChevronRight style={{ 
+                  width: '24px', 
+                  height: '24px', 
+                  flexShrink: 0,
+                  color: status === 'completed' ? '#34d399' : '#6b7280'
+                }} />
               )}
             </motion.button>
           );

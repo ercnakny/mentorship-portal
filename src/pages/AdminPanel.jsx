@@ -16,9 +16,7 @@ import {
   ChevronDown,
   ChevronUp,
   TrendingUp,
-  Eye,
-  AlertCircle,
-  ChevronRight
+  AlertCircle
 } from 'lucide-react';
 
 const MENTORSHIP_SECTIONS = [
@@ -125,8 +123,8 @@ const DEMO_CLIENTS = [
 const AdminPanel = ({ user, onNavigate }) => {
   const [activeTab, setActiveTab] = useState('requests');
   const [expandedUser, setExpandedUser] = useState(null);
-  const [selectedClient, setSelectedClient] = useState(null);
   const [clientFilter, setClientFilter] = useState('all');
+  const [selectedClient, setSelectedClient] = useState(null);
   
   const [newUser, setNewUser] = useState({
     email: '',
@@ -173,7 +171,7 @@ const AdminPanel = ({ user, onNavigate }) => {
     };
   };
 
-  const [addStatus, setAddStatus] = useState(null); // null | 'loading' | 'success' | 'error'
+  const [addStatus, setAddStatus] = useState(null);
 
   const handleAddUser = async () => {
     if (newUser.email && newUser.email.includes('@') && newUser.name) {
@@ -216,41 +214,73 @@ const AdminPanel = ({ user, onNavigate }) => {
 
   const pendingCount = requests.filter(r => r.status === 'pending').length;
 
+  // Styles
+  const pageStyle = { padding: '32px', maxWidth: '1400px', margin: '0 auto' };
+  const cardStyle = { backgroundColor: '#1a2234', borderRadius: '16px', border: '1px solid #2d3a4f', padding: '24px' };
+
+  const getTabStyle = (isActive) => ({
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    padding: '12px 20px',
+    borderRadius: '12px',
+    fontSize: '14px',
+    fontWeight: 500,
+    transition: 'all 0.2s',
+    border: isActive ? '1px solid rgba(14, 165, 233, 0.3)' : '1px solid #2d3a4f',
+    backgroundColor: isActive ? 'rgba(14, 165, 233, 0.2)' : 'transparent',
+    color: isActive ? '#38bdf8' : '#9ca3af',
+    cursor: 'pointer'
+  });
+
+  const inputStyle = {
+    width: '100%',
+    height: '48px',
+    backgroundColor: '#151c2c',
+    border: '2px solid #2d3a4f',
+    borderRadius: '12px',
+    padding: '0 16px',
+    fontSize: '16px',
+    color: 'white',
+    outline: 'none',
+    transition: 'all 0.2s'
+  };
+
   return (
-    <div className="p-6 md:p-8">
-      <motion.div className="mb-8" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-        <button onClick={() => onNavigate('dashboard')} className="flex items-center gap-2 text-gray-400 hover:text-white mb-6 transition-colors text-sm">
-          <ArrowLeft className="w-4 h-4" />
+    <div style={pageStyle}>
+      <motion.div style={{ marginBottom: '32px' }} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+        <button 
+          onClick={() => onNavigate('dashboard')} 
+          style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#9ca3af', marginBottom: '24px', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px' }}
+          onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
+          onMouseLeave={(e) => e.currentTarget.style.color = '#9ca3af'}
+        >
+          <ArrowLeft style={{ width: '16px', height: '16px' }} />
           <span>Dashboard</span>
         </button>
-        <h1 className="text-2xl md:text-4xl font-bold text-white mb-2">Admin Panel</h1>
-        <p className="text-gray-400">Danışanlarınızı ve talepleri yönetin</p>
+        <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: 'white', marginBottom: '8px' }}>Admin Panel</h1>
+        <p style={{ color: '#9ca3af', fontSize: '16px' }}>Danışanlarınızı ve talepleri yönetin</p>
       </motion.div>
 
       {/* Tabs */}
-      <div className="flex flex-wrap gap-3 mb-8">
-        <button
-          onClick={() => setActiveTab('requests')}
-          className={`flex items-center gap-3 px-5 py-3 rounded-xl text-sm font-medium transition-all ${activeTab === 'requests' ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30' : 'bg-dark-200 text-gray-400 border border-dark-100 hover:border-primary-500/30 hover:text-gray-200'}`}
-        >
-          <Clock className="w-4 h-4 flex-shrink-0" />
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '32px' }}>
+        <button onClick={() => setActiveTab('requests')} style={getTabStyle(activeTab === 'requests')}>
+          <Clock style={{ width: '16px', height: '16px' }} />
           <span>Talepler</span>
-          {pendingCount > 0 && <span className="bg-amber-500/20 text-amber-400 text-xs font-semibold px-2.5 py-0.5 rounded-lg flex-shrink-0">{pendingCount}</span>}
+          {pendingCount > 0 && (
+            <span style={{ backgroundColor: 'rgba(251, 191, 36, 0.2)', color: '#fbbf24', fontSize: '12px', fontWeight: 600, padding: '2px 10px', borderRadius: '8px' }}>{pendingCount}</span>
+          )}
         </button>
-        <button
-          onClick={() => setActiveTab('users')}
-          className={`flex items-center gap-3 px-5 py-3 rounded-xl text-sm font-medium transition-all ${activeTab === 'users' ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30' : 'bg-dark-200 text-gray-400 border border-dark-100 hover:border-primary-500/30 hover:text-gray-200'}`}
-        >
-          <Users className="w-4 h-4 flex-shrink-0" />
+        <button onClick={() => setActiveTab('users')} style={getTabStyle(activeTab === 'users')}>
+          <Users style={{ width: '16px', height: '16px' }} />
           <span>Danışanlar</span>
         </button>
-        <button
-          onClick={() => setActiveTab('tracking')}
-          className={`flex items-center gap-3 px-5 py-3 rounded-xl text-sm font-medium transition-all ${activeTab === 'tracking' ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30' : 'bg-dark-200 text-gray-400 border border-dark-100 hover:border-primary-500/30 hover:text-gray-200'}`}
-        >
-          <TrendingUp className="w-4 h-4 flex-shrink-0" />
+        <button onClick={() => setActiveTab('tracking')} style={getTabStyle(activeTab === 'tracking')}>
+          <TrendingUp style={{ width: '16px', height: '16px' }} />
           <span>Süreç Takibi</span>
-          {stuckClients.length > 0 && <span className="bg-red-500/20 text-red-400 text-xs font-semibold px-2.5 py-0.5 rounded-lg flex-shrink-0">{stuckClients.length}</span>}
+          {stuckClients.length > 0 && (
+            <span style={{ backgroundColor: 'rgba(239, 68, 68, 0.2)', color: '#f87171', fontSize: '12px', fontWeight: 600, padding: '2px 10px', borderRadius: '8px' }}>{stuckClients.length}</span>
+          )}
         </button>
       </div>
 
@@ -258,35 +288,35 @@ const AdminPanel = ({ user, onNavigate }) => {
       {activeTab === 'requests' && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
           {requests.length === 0 ? (
-            <div className="bg-dark-200 rounded-2xl p-8 border border-dark-100 text-center">
-              <p className="text-gray-500">Henüz talep yok</p>
+            <div style={{ ...cardStyle, textAlign: 'center', padding: '32px' }}>
+              <p style={{ color: '#6b7280' }}>Henüz talep yok</p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {requests.map((request) => (
-                <div key={request.id} className={`bg-dark-200 rounded-2xl p-5 border ${request.status === 'pending' ? 'border-amber-500/30' : request.status === 'approved' ? 'border-emerald-500/30' : 'border-red-500/30'}`}>
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className={`px-2 py-1 rounded-lg text-xs font-medium ${request.status === 'pending' ? 'bg-amber-500/20 text-amber-400' : request.status === 'approved' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
+                <div key={request.id} style={{ ...cardStyle, border: request.status === 'pending' ? '1px solid rgba(251, 191, 36, 0.3)' : request.status === 'approved' ? '1px solid rgba(52, 211, 153, 0.3)' : '1px solid rgba(239, 68, 68, 0.3)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                        <span style={{ padding: '4px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: 500, backgroundColor: request.status === 'pending' ? 'rgba(251, 191, 36, 0.2)' : request.status === 'approved' ? 'rgba(52, 211, 153, 0.2)' : 'rgba(239, 68, 68, 0.2)', color: request.status === 'pending' ? '#fbbf24' : request.status === 'approved' ? '#34d399' : '#f87171' }}>
                           {request.status === 'pending' ? 'Bekliyor' : request.status === 'approved' ? 'Onaylandı' : 'Reddedildi'}
                         </span>
-                        <span className="text-gray-500 text-sm">{request.createdAt}</span>
+                        <span style={{ color: '#6b7280', fontSize: '14px' }}>{request.createdAt}</span>
                       </div>
-                      <h3 className="text-white font-semibold mb-1">{request.userName}</h3>
-                      <p className="text-gray-400 text-sm mb-2">{request.userEmail}</p>
-                      <p className="text-gray-300 text-sm">
-                        <span className="text-primary-400 capitalize">{request.section}</span> bölümü için talep
+                      <h3 style={{ color: 'white', fontWeight: 600, marginBottom: '4px' }}>{request.userName}</h3>
+                      <p style={{ color: '#9ca3af', fontSize: '14px', marginBottom: '8px' }}>{request.userEmail}</p>
+                      <p style={{ color: '#e5e7eb', fontSize: '14px' }}>
+                        <span style={{ color: '#38bdf8', textTransform: 'capitalize' }}>{request.section}</span> bölümü için talep
                         {request.message && `: "${request.message}"`}
                       </p>
                     </div>
                     {request.status === 'pending' && (
-                      <div className="flex gap-2">
-                        <button onClick={() => handleApproveRequest(request.id)} className="p-2 bg-emerald-500/20 text-emerald-400 rounded-xl hover:bg-emerald-500/30 transition-colors" title="Onayla">
-                          <CheckCircle2 className="w-5 h-5" />
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button onClick={() => handleApproveRequest(request.id)} style={{ padding: '10px', backgroundColor: 'rgba(52, 211, 153, 0.2)', color: '#34d399', borderRadius: '12px', border: 'none', cursor: 'pointer' }} title="Onayla">
+                          <CheckCircle2 style={{ width: '20px', height: '20px' }} />
                         </button>
-                        <button onClick={() => handleRejectRequest(request.id)} className="p-2 bg-red-500/20 text-red-400 rounded-xl hover:bg-red-500/30 transition-colors" title="Reddet">
-                          <XCircle className="w-5 h-5" />
+                        <button onClick={() => handleRejectRequest(request.id)} style={{ padding: '10px', backgroundColor: 'rgba(239, 68, 68, 0.2)', color: '#f87171', borderRadius: '12px', border: 'none', cursor: 'pointer' }} title="Reddet">
+                          <XCircle style={{ width: '20px', height: '20px' }} />
                         </button>
                       </div>
                     )}
@@ -301,166 +331,63 @@ const AdminPanel = ({ user, onNavigate }) => {
       {/* Users Tab */}
       {activeTab === 'users' && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="bg-dark-200 rounded-2xl p-5 border border-dark-100 mb-6">
-            <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-              <Plus className="w-5 h-5 text-primary-400" />
+          <div style={{ ...cardStyle, marginBottom: '24px' }}>
+            <h3 style={{ color: 'white', fontWeight: 600, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Plus style={{ width: '20px', height: '20px', color: '#38bdf8' }} />
               Yeni Danışan Ekle
             </h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '16px' }}>
               <div>
-                <label className="text-gray-400 text-sm mb-1 block">Ad Soyad *</label>
-                <input type="text" value={newUser.name} onChange={(e) => setNewUser({...newUser, name: e.target.value})} placeholder="Örn: Mehmet Demir" className="w-full bg-dark-100 border border-dark-100 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500" />
+                <label style={{ fontSize: '14px', fontWeight: 500, color: '#9ca3af', marginBottom: '8px', display: 'block' }}>Ad Soyad *</label>
+                <input type="text" value={newUser.name} onChange={(e) => setNewUser({...newUser, name: e.target.value})} placeholder="Örn: Mehmet Demir" style={inputStyle} />
               </div>
               <div>
-                <label className="text-gray-400 text-sm mb-1 block">E-posta *</label>
-                <input type="email" value={newUser.email} onChange={(e) => setNewUser({...newUser, email: e.target.value})} placeholder="ornek@email.com" className="w-full bg-dark-100 border border-dark-100 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500" />
+                <label style={{ fontSize: '14px', fontWeight: 500, color: '#9ca3af', marginBottom: '8px', display: 'block' }}>E-posta *</label>
+                <input type="email" value={newUser.email} onChange={(e) => setNewUser({...newUser, email: e.target.value})} placeholder="ornek@email.com" style={inputStyle} />
               </div>
               <div>
-                <label className="text-gray-400 text-sm mb-1 block flex items-center gap-1"><Building className="w-4 h-4" />Sektör</label>
-                <input type="text" value={newUser.industry} onChange={(e) => setNewUser({...newUser, industry: e.target.value})} placeholder="Örn: Psikoloji, Fitness, Diyetisyen" className="w-full bg-dark-100 border border-dark-100 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500" />
-              </div>
-              <div>
-                <label className="text-gray-400 text-sm mb-1 block flex items-center gap-1"><FileText className="w-4 h-4" />İçerik Desteği</label>
-                <select value={newUser.hasContentSupport ? 'destekli' : 'desteksiz'} onChange={(e) => setNewUser({...newUser, hasContentSupport: e.target.value === 'destekli'})} className="w-full bg-dark-100 border border-dark-100 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500">
-                  <option value="destekli">İçerik Destekli</option>
-                  <option value="desteksiz">Desteksiz</option>
-                </select>
-              </div>
-              <div>
-                <label className="text-gray-400 text-sm mb-1 block flex items-center gap-1"><Calendar className="w-4 h-4" />Başlangıç Tarihi</label>
-                <input type="date" value={newUser.startDate} onChange={(e) => setNewUser({...newUser, startDate: e.target.value})} className="w-full bg-dark-100 border border-dark-100 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500" />
+                <label style={{ fontSize: '14px', fontWeight: 500, color: '#9ca3af', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <Building style={{ width: '16px', height: '16px' }} />
+                  Sektör
+                </label>
+                <input type="text" value={newUser.industry} onChange={(e) => setNewUser({...newUser, industry: e.target.value})} placeholder="Örn: Psikoloji, Fitness" style={inputStyle} />
               </div>
             </div>
 
-            {newUser.startDate && (
-              <div className="bg-dark-100 rounded-xl p-4 mb-4">
-                <p className="text-gray-400 text-sm mb-2">90 Günlük Süreç (Tahmini Bitiş: {calculateTimeline(newUser.startDate).endDate})</p>
-                <div className="grid grid-cols-5 gap-2">
-                  {calculateTimeline(newUser.startDate).timeline.map((section) => (
-                    <div key={section.id} className="bg-dark-200 rounded-lg p-2 text-center">
-                      <p className="text-primary-400 text-xs font-medium">{section.name}</p>
-                      <p className="text-gray-500 text-xs">{section.duration} gün</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <button 
-              onClick={handleAddUser} 
-              disabled={!newUser.email || !newUser.name || addStatus === 'loading'} 
-              className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-                addStatus === 'success' 
-                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
-                  : addStatus === 'error'
-                    ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                    : 'bg-primary-500 text-white hover:bg-primary-400'
-              }`}
-            >
-              {addStatus === 'loading' ? (
-                <>
-                  <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>
-                    <Clock className="w-4 h-4" />
-                  </motion.div>
-                  Ekleniyor...
-                </>
-              ) : addStatus === 'success' ? (
-                <>
-                  <CheckCircle2 className="w-4 h-4" />
-                  Eklendi!
-                </>
-              ) : addStatus === 'error' ? (
-                <>
-                  <AlertCircle className="w-4 h-4" />
-                  Hata oluştu
-                </>
-              ) : (
-                <>
-                  <Plus className="w-4 h-4" />
-                  Danışan Ekle
-                </>
-              )}
+            <button onClick={handleAddUser} disabled={!newUser.email || !newUser.name || addStatus === 'loading'} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 500, opacity: (!newUser.email || !newUser.name || addStatus === 'loading') ? 0.5 : 1, cursor: (!newUser.email || !newUser.name || addStatus === 'loading') ? 'not-allowed' : 'pointer', backgroundColor: '#0ea5e9', color: 'white', border: 'none' }}>
+              <Plus style={{ width: '16px', height: '16px' }} />
+              Danışan Ekle
             </button>
           </div>
 
-          <div className="space-y-4">
-            {allowedEmails.map((u, index) => {
-              const timeline = u.startDate ? calculateTimeline(u.startDate) : null;
-              return (
-                <div key={index} className="bg-dark-200 rounded-2xl border border-dark-100 overflow-hidden">
-                  <div className="p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
-                        <span className="text-white font-bold">{u.name.charAt(0)}</span>
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="text-white font-semibold">{u.name}</h3>
-                          {u.role === 'admin' && <span className="px-2 py-0.5 bg-primary-500/20 text-primary-400 text-xs rounded-lg">Admin</span>}
-                          <span className={`px-2 py-0.5 text-xs rounded-lg ${u.status === 'active' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>{u.status === 'active' ? 'Aktif' : 'Bekliyor'}</span>
-                        </div>
-                        <p className="text-gray-500 text-sm">{u.email}</p>
-                      </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {allowedEmails.map((u, index) => (
+              <div key={index} style={{ ...cardStyle, cursor: 'default' }}>
+                <div style={{ padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'linear-gradient(to bottom right, #0ea5e9, #0284c7)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <span style={{ color: 'white', fontWeight: 'bold', fontSize: '18px' }}>{u.name.charAt(0)}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {u.role !== 'admin' && (
-                        <button onClick={() => handleDeleteUser(u.email)} className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
-                      )}
-                      <button onClick={() => setExpandedUser(expandedUser === index ? null : index)} className="p-2 text-gray-400 hover:text-white hover:bg-dark-100 rounded-lg transition-colors">
-                        {expandedUser === index ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-                      </button>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                        <h3 style={{ color: 'white', fontWeight: 600 }}>{u.name}</h3>
+                        {u.role === 'admin' && <span style={{ padding: '2px 8px', backgroundColor: 'rgba(14, 165, 233, 0.2)', color: '#38bdf8', fontSize: '12px', borderRadius: '6px' }}>Admin</span>}
+                        <span style={{ padding: '2px 8px', fontSize: '12px', borderRadius: '6px', backgroundColor: u.status === 'active' ? 'rgba(52, 211, 153, 0.2)' : 'rgba(251, 191, 36, 0.2)', color: u.status === 'active' ? '#34d399' : '#fbbf24' }}>
+                          {u.status === 'active' ? 'Aktif' : 'Bekliyor'}
+                        </span>
+                      </div>
+                      <p style={{ color: '#6b7280', fontSize: '14px' }}>{u.email}</p>
                     </div>
                   </div>
-
-                  {expandedUser === index && (
-                    <div className="px-4 pb-4 border-t border-dark-100 pt-4">
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                        <div className="bg-dark-100 rounded-xl p-3">
-                          <p className="text-gray-500 text-xs mb-1">Sektör</p>
-                          <p className="text-white text-sm">{u.industry || '-'}</p>
-                        </div>
-                        <div className="bg-dark-100 rounded-xl p-3">
-                          <p className="text-gray-500 text-xs mb-1">İçerik Desteği</p>
-                          <p className={`text-sm ${u.hasContentSupport ? 'text-emerald-400' : 'text-gray-400'}`}>{u.hasContentSupport ? 'Destekli' : 'Desteksiz'}</p>
-                        </div>
-                        <div className="bg-dark-100 rounded-xl p-3">
-                          <p className="text-gray-500 text-xs mb-1">Başlangıç</p>
-                          <p className="text-white text-sm">{u.startDate || '-'}</p>
-                        </div>
-                        <div className="bg-dark-100 rounded-xl p-3">
-                          <p className="text-gray-500 text-xs mb-1">Bitiş (90 Gün)</p>
-                          <p className="text-white text-sm">{timeline ? timeline.endDate : '-'}</p>
-                        </div>
-                      </div>
-
-                      {timeline && (
-                        <div className="bg-dark-100 rounded-xl p-4">
-                          <p className="text-gray-400 text-sm mb-3">Süreç Takvimi</p>
-                          <div className="space-y-2">
-                            {timeline.timeline.map((section, idx) => (
-                              <div key={section.id} className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-primary-500/20 text-primary-400 flex items-center justify-center text-sm font-medium">{idx + 1}</div>
-                                <div className="flex-1">
-                                  <div className="flex items-center justify-between mb-0.5">
-                                    <p className="text-white text-sm font-medium">{section.name}</p>
-                                    <p className="text-gray-500 text-xs">{section.dayStart}-{section.dayEnd}. gün</p>
-                                  </div>
-                                  <div className="h-2 bg-dark-200 rounded-full overflow-hidden">
-                                    <div className="h-full bg-primary-500 rounded-full" style={{ width: Math.round((section.duration / 90) * 100) + '%' }} />
-                                  </div>
-                                  <p className="text-gray-500 text-xs mt-0.5">{section.startDate} - {section.endDate} ({section.duration} gün)</p>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                  {u.role !== 'admin' && (
+                    <button onClick={() => handleDeleteUser(u.email)} style={{ padding: '8px', color: '#f87171', backgroundColor: 'transparent', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>
+                      <Trash2 style={{ width: '16px', height: '16px' }} />
+                    </button>
                   )}
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         </motion.div>
       )}
@@ -468,93 +395,153 @@ const AdminPanel = ({ user, onNavigate }) => {
       {/* Tracking Tab */}
       {activeTab === 'tracking' && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-          {/* Stats Overview */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div className="bg-dark-200 rounded-xl p-4 border border-dark-100">
-              <p className="text-gray-400 text-sm mb-1">Toplam Danışan</p>
-              <p className="text-2xl font-bold text-white">{clients.length}</p>
+          {/* Stats */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+            <div style={cardStyle}>
+              <p style={{ color: '#9ca3af', fontSize: '14px', marginBottom: '4px' }}>Toplam Danışan</p>
+              <p style={{ fontSize: '32px', fontWeight: 'bold', color: 'white' }}>{clients.length}</p>
             </div>
-            <div className="bg-dark-200 rounded-xl p-4 border border-dark-100">
-              <p className="text-gray-400 text-sm mb-1">Aktif</p>
-              <p className="text-2xl font-bold text-emerald-400">{clients.filter(c => c.status === 'active').length}</p>
+            <div style={cardStyle}>
+              <p style={{ color: '#9ca3af', fontSize: '14px', marginBottom: '4px' }}>Aktif</p>
+              <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#34d399' }}>{clients.filter(c => c.status === 'active').length}</p>
             </div>
-            <div className="bg-dark-200 rounded-xl p-4 border border-dark-100">
-              <p className="text-gray-400 text-sm mb-1">Takılan</p>
-              <p className="text-2xl font-bold text-red-400">{stuckClients.length}</p>
+            <div style={cardStyle}>
+              <p style={{ color: '#9ca3af', fontSize: '14px', marginBottom: '4px' }}>Takılan</p>
+              <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#f87171' }}>{stuckClients.length}</p>
             </div>
-            <div className="bg-dark-200 rounded-xl p-4 border border-dark-100">
-              <p className="text-gray-400 text-sm mb-1">Bekleyen</p>
-              <p className="text-2xl font-bold text-amber-400">{clients.filter(c => c.status === 'pending').length}</p>
+            <div style={cardStyle}>
+              <p style={{ color: '#9ca3af', fontSize: '14px', marginBottom: '4px' }}>Bekleyen</p>
+              <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#fbbf24' }}>{clients.filter(c => c.status === 'pending').length}</p>
             </div>
           </div>
 
           {/* Filters */}
-          <div className="flex flex-wrap gap-2 mb-6">
-            <button onClick={() => setClientFilter('all')} className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${clientFilter === 'all' ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30' : 'bg-dark-200 text-gray-400 border border-dark-100'}`}>Tümü ({clients.length})</button>
-            <button onClick={() => setClientFilter('active')} className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${clientFilter === 'active' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-dark-200 text-gray-400 border border-dark-100'}`}>Aktif ({clients.filter(c => c.status === 'active').length})</button>
-            <button onClick={() => setClientFilter('stuck')} className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${clientFilter === 'stuck' ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-dark-200 text-gray-400 border border-dark-100'}`}>Takılan ({stuckClients.length})</button>
-            <button onClick={() => setClientFilter('pending')} className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${clientFilter === 'pending' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-dark-200 text-gray-400 border border-dark-100'}`}>Bekleyen ({clients.filter(c => c.status === 'pending').length})</button>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '24px' }}>
+            <button onClick={() => setClientFilter('all')} style={{ padding: '8px 16px', borderRadius: '12px', fontSize: '14px', fontWeight: 500, border: clientFilter === 'all' ? '1px solid rgba(14, 165, 233, 0.3)' : '1px solid #2d3a4f', backgroundColor: clientFilter === 'all' ? 'rgba(14, 165, 233, 0.2)' : 'transparent', color: clientFilter === 'all' ? '#38bdf8' : '#9ca3af', cursor: 'pointer' }}>
+              Tümü ({clients.length})
+            </button>
+            <button onClick={() => setClientFilter('active')} style={{ padding: '8px 16px', borderRadius: '12px', fontSize: '14px', fontWeight: 500, border: clientFilter === 'active' ? '1px solid rgba(52, 211, 153, 0.3)' : '1px solid #2d3a4f', backgroundColor: clientFilter === 'active' ? 'rgba(52, 211, 153, 0.2)' : 'transparent', color: clientFilter === 'active' ? '#34d399' : '#9ca3af', cursor: 'pointer' }}>
+              Aktif ({clients.filter(c => c.status === 'active').length})
+            </button>
+            <button onClick={() => setClientFilter('stuck')} style={{ padding: '8px 16px', borderRadius: '12px', fontSize: '14px', fontWeight: 500, border: clientFilter === 'stuck' ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid #2d3a4f', backgroundColor: clientFilter === 'stuck' ? 'rgba(239, 68, 68, 0.2)' : 'transparent', color: clientFilter === 'stuck' ? '#f87171' : '#9ca3af', cursor: 'pointer' }}>
+              Takılan ({stuckClients.length})
+            </button>
+            <button onClick={() => setClientFilter('pending')} style={{ padding: '8px 16px', borderRadius: '12px', fontSize: '14px', fontWeight: 500, border: clientFilter === 'pending' ? '1px solid rgba(251, 191, 36, 0.3)' : '1px solid #2d3a4f', backgroundColor: clientFilter === 'pending' ? 'rgba(251, 191, 36, 0.2)' : 'transparent', color: clientFilter === 'pending' ? '#fbbf24' : '#9ca3af', cursor: 'pointer' }}>
+              Bekleyen ({clients.filter(c => c.status === 'pending').length})
+            </button>
           </div>
 
           {/* Client List */}
-          <div className="space-y-3">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {filteredClients.map((client) => {
               const progress = getSectionProgress(client);
               const currentSection = MENTORSHIP_SECTIONS.find(s => s.id === client.currentSection);
               const isExpanded = selectedClient === client.id;
               
               return (
-                <div key={client.id} className="bg-dark-200 rounded-2xl border border-dark-100 overflow-hidden">
+                <div key={client.id} style={{ ...cardStyle }}>
                   {/* Client Summary Row */}
-                  <div className="p-4 flex items-center justify-between cursor-pointer hover:bg-dark-100/50 transition-colors" onClick={() => setSelectedClient(isExpanded ? null : client.id)}>
-                    <div className="flex items-center gap-4">
-                      <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${currentSection?.color || 'from-gray-500 to-gray-600'} flex items-center justify-center`}>
-                        <span className="text-white font-bold">{client.name.charAt(0)}</span>
+                  <div 
+                    style={{ 
+                      padding: '16px', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'space-between',
+                      cursor: 'default'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <div style={{
+                        width: '48px',
+                        height: '48px',
+                        borderRadius: '50%',
+                        background: `linear-gradient(to bottom right, ${currentSection?.color.split(' ')[1] || '#6b7280'}, ${currentSection?.color.split(' ')[3] || '#6b7280'})`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        <span style={{ color: 'white', fontWeight: 'bold', fontSize: '18px' }}>{client.name.charAt(0)}</span>
                       </div>
                       <div>
-                        <div className="flex items-center gap-2 mb-0.5">
-                          <h3 className="text-white font-semibold">{client.name}</h3>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                          <h3 style={{ color: 'white', fontWeight: 600 }}>{client.name}</h3>
                           {client.stuckDays > 3 && (
-                            <span className="flex items-center gap-1 px-2 py-0.5 bg-red-500/20 text-red-400 text-xs rounded-lg">
-                              <AlertCircle className="w-3 h-3" />
+                            <span style={{ 
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              padding: '2px 8px',
+                              backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                              color: '#f87171',
+                              fontSize: '12px',
+                              borderRadius: '6px'
+                            }}>
+                              <AlertCircle style={{ width: '12px', height: '12px' }} />
                               {client.stuckDays} gün takılı
                             </span>
                           )}
                         </div>
-                        <p className="text-gray-500 text-sm">{client.industry} • {client.currentSection} bölümü • Adım {client.currentStep}</p>
+                        <p style={{ color: '#6b7280', fontSize: '14px' }}>{client.industry} • {client.currentSection} bölümü • Adım {client.currentStep}</p>
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-4">
-                      {/* Progress Ring */}
-                      <div className="relative w-12 h-12">
-                        <svg className="w-12 h-12 transform -rotate-90">
-                          <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="4" fill="none" className="text-dark-100" />
-                          <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="4" fill="none" className={client.stuckDays > 3 ? 'text-red-500' : 'text-primary-500'} strokeDasharray={`${progress.overallProgress * 1.26} 126`} strokeLinecap="round" />
-                        </svg>
-                        <span className="absolute inset-0 flex items-center justify-center text-xs font-medium text-white">%{progress.overallProgress}</span>
-                      </div>
-                      
-                      <ChevronRight className={`w-5 h-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+                    {/* Progress Ring */}
+                    <div style={{ position: 'relative', width: '48px', height: '48px' }}>
+                      <svg style={{ width: '48px', height: '48px', transform: 'rotate(-90deg)' }}>
+                        <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="4" fill="none" style={{ color: '#2d3a4f' }} />
+                        <circle 
+                          cx="24" cy="24" r="20" 
+                          stroke="currentColor" 
+                          strokeWidth="4" 
+                          fill="none" 
+                          style={{ 
+                            color: client.stuckDays > 3 ? '#ef4444' : '#0ea5e9',
+                            strokeDasharray: `${progress.overallProgress * 1.26} 126`,
+                            strokeLinecap: 'round'
+                          }} 
+                        />
+                      </svg>
+                      <span style={{ 
+                        position: 'absolute', 
+                        inset: 0, 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        fontSize: '12px',
+                        fontWeight: 500,
+                        color: 'white'
+                      }}>%{progress.overallProgress}</span>
                     </div>
                   </div>
 
-                  {/* Expanded Details */}
+                  {/* Expanded Details - Always visible when selected */}
                   {isExpanded && (
-                    <div className="border-t border-dark-100">
-                      <div className="p-4 bg-dark-100/50">
+                    <div style={{ borderTop: '1px solid #2d3a4f' }}>
+                      <div style={{ padding: '16px', backgroundColor: 'rgba(26, 34, 52, 0.3)' }}>
                         {/* Timeline Progress */}
-                        <div className="mb-4">
-                          <p className="text-gray-400 text-sm mb-3">Süreç Durumu</p>
-                          <div className="flex gap-1">
+                        <div style={{ marginBottom: '16px' }}>
+                          <p style={{ color: '#9ca3af', fontSize: '14px', marginBottom: '12px' }}>Süreç Durumu</p>
+                          <div style={{ display: 'flex', gap: '4px' }}>
                             {progress.timeline.map((section, idx) => {
                               const isCompleted = idx < progress.currentSectionIdx;
                               const isCurrent = idx === progress.currentSectionIdx;
                               
                               return (
-                                <div key={section.id} className={`flex-1 h-8 rounded-lg flex items-center justify-center text-xs font-medium transition-all ${isCompleted ? 'bg-emerald-500 text-white' : isCurrent ? `bg-gradient-to-r ${section.color} text-white` : 'bg-dark-200 text-gray-500'}`} title={`${section.name}: ${section.dayStart}-${section.dayEnd}. gün`}>
-                                  {isCompleted && <CheckCircle2 className="w-4 h-4" />}
-                                  {isCurrent && <span className="truncate px-1">{section.name}</span>}
+                                <div key={section.id} style={{ 
+                                  flex: 1, 
+                                  height: '32px', 
+                                  borderRadius: '8px', 
+                                  display: 'flex', 
+                                  alignItems: 'center', 
+                                  justifyContent: 'center', 
+                                  fontSize: '12px', 
+                                  fontWeight: 500,
+                                  backgroundColor: isCompleted ? '#10b981' : isCurrent ? '#0ea5e9' : '#2d3a4f',
+                                  color: isCompleted || isCurrent ? 'white' : '#6b7280',
+                                  overflow: 'hidden'
+                                }} title={`${section.name}: ${section.dayStart}-${section.dayEnd}. gün`}>
+                                  {isCompleted && <CheckCircle2 style={{ width: '16px', height: '16px' }} />}
+                                  {isCurrent && <span style={{ padding: '0 4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{section.name}</span>}
                                 </div>
                               );
                             })}
@@ -562,47 +549,46 @@ const AdminPanel = ({ user, onNavigate }) => {
                         </div>
 
                         {/* Current Section Detail */}
-                        <div className="bg-dark-200 rounded-xl p-4 mb-4">
-                          <div className="flex items-center justify-between mb-2">
+                        <div style={{ backgroundColor: '#151c2c', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                             <div>
-                              <p className="text-gray-400 text-xs">Şu An</p>
-                              <p className="text-white font-semibold capitalize">{client.currentSection} Bölümü • Adım {client.currentStep}/{client.totalSteps}</p>
+                              <p style={{ color: '#6b7280', fontSize: '12px' }}>Şu An</p>
+                              <p style={{ color: 'white', fontWeight: 600, textTransform: 'capitalize' }}>{client.currentSection} Bölümü • Adım {client.currentStep}/{client.totalSteps}</p>
                             </div>
-                            <div className="text-right">
-                              <p className="text-gray-400 text-xs">Kalan</p>
-                              <p className="text-white font-semibold">{90 - Math.round((new Date() - new Date(client.startDate)) / (1000 * 60 * 60 * 24))} gün</p>
+                            <div style={{ textAlign: 'right' }}>
+                              <p style={{ color: '#6b7280', fontSize: '12px' }}>Kalan</p>
+                              <p style={{ color: 'white', fontWeight: 600 }}>{90 - Math.round((new Date() - new Date(client.startDate)) / (1000 * 60 * 60 * 24))} gün</p>
                             </div>
                           </div>
-                          <div className="h-2 bg-dark-100 rounded-full overflow-hidden">
-                            <div className={`h-full bg-gradient-to-r ${currentSection?.color || 'from-primary-500 to-primary-600'} rounded-full`} style={{ width: `${(client.currentStep / client.totalSteps) * 100}%` }} />
+                          <div style={{ height: '8px', backgroundColor: '#0f172a', borderRadius: '4px', overflow: 'hidden' }}>
+                            <div style={{ 
+                              height: '100%', 
+                              background: `linear-gradient(to right, ${currentSection?.color.includes('blue') ? '#3b82f6' : currentSection?.color.includes('purple') ? '#a855f7' : currentSection?.color.includes('amber') ? '#f59e0b' : currentSection?.color.includes('emerald') ? '#10b981' : '#f43f5e'}, ${currentSection?.color.includes('blue') ? '#2563eb' : currentSection?.color.includes('purple') ? '#9333ea' : currentSection?.color.includes('amber') ? '#d97706' : currentSection?.color.includes('emerald') ? '#059669' : '#e11d48'})`, 
+                              borderRadius: '4px', 
+                              width: `${(client.currentStep / client.totalSteps) * 100}%` 
+                            }} />
                           </div>
                         </div>
 
                         {/* Client Info Grid */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                          <div className="bg-dark-200 rounded-lg p-3">
-                            <p className="text-gray-500 text-xs mb-1">Başlangıç</p>
-                            <p className="text-white text-sm">{client.startDate}</p>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '12px' }}>
+                          <div style={{ backgroundColor: '#151c2c', borderRadius: '8px', padding: '12px' }}>
+                            <p style={{ color: '#6b7280', fontSize: '12px', marginBottom: '4px' }}>Başlangıç</p>
+                            <p style={{ color: 'white', fontSize: '14px' }}>{client.startDate}</p>
                           </div>
-                          <div className="bg-dark-200 rounded-lg p-3">
-                            <p className="text-gray-500 text-xs mb-1">Bitiş</p>
-                            <p className="text-white text-sm">{progress.timeline.endDate}</p>
+                          <div style={{ backgroundColor: '#151c2c', borderRadius: '8px', padding: '12px' }}>
+                            <p style={{ color: '#6b7280', fontSize: '12px', marginBottom: '4px' }}>Bitiş</p>
+                            <p style={{ color: 'white', fontSize: '14px' }}>{progress.timeline.endDate}</p>
                           </div>
-                          <div className="bg-dark-200 rounded-lg p-3">
-                            <p className="text-gray-500 text-xs mb-1">Son Aktivite</p>
-                            <p className="text-white text-sm">{client.lastActivity || '-'}</p>
+                          <div style={{ backgroundColor: '#151c2c', borderRadius: '8px', padding: '12px' }}>
+                            <p style={{ color: '#6b7280', fontSize: '12px', marginBottom: '4px' }}>Son Aktivite</p>
+                            <p style={{ color: 'white', fontSize: '14px' }}>{client.lastActivity || '-'}</p>
                           </div>
-                          <div className="bg-dark-200 rounded-lg p-3">
-                            <p className="text-gray-500 text-xs mb-1">İçerik Desteği</p>
-                            <p className={`text-sm ${client.hasContentSupport ? 'text-emerald-400' : 'text-gray-400'}`}>{client.hasContentSupport ? 'Destekli' : 'Desteksiz'}</p>
+                          <div style={{ backgroundColor: '#151c2c', borderRadius: '8px', padding: '12px' }}>
+                            <p style={{ color: '#6b7280', fontSize: '12px', marginBottom: '4px' }}>İçerik Desteği</p>
+                            <p style={{ color: client.hasContentSupport ? '#34d399' : '#9ca3af', fontSize: '14px' }}>{client.hasContentSupport ? 'Destekli' : 'Desteksiz'}</p>
                           </div>
                         </div>
-
-                        {/* Action Button */}
-                        <button className="w-full btn-primary">
-                          <Eye className="w-4 h-4" />
-                          Danışanı Görüntüle
-                        </button>
                       </div>
                     </div>
                   )}
@@ -612,9 +598,9 @@ const AdminPanel = ({ user, onNavigate }) => {
           </div>
 
           {filteredClients.length === 0 && (
-            <div className="bg-dark-200 rounded-2xl p-8 border border-dark-100 text-center">
-              <Users className="w-12 h-12 text-gray-500 mx-auto mb-2" />
-              <p className="text-gray-500">Bu filtreye uygun danışan yok</p>
+            <div style={{ ...cardStyle, textAlign: 'center', padding: '32px' }}>
+              <Users style={{ width: '48px', height: '48px', color: '#6b7280', margin: '0 auto 8px' }} />
+              <p style={{ color: '#6b7280' }}>Bu filtreye uygun danışan yok</p>
             </div>
           )}
         </motion.div>

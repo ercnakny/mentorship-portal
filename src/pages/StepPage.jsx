@@ -25,7 +25,6 @@ const StepPage = ({ section, step, user, onNavigate, onUserUpdate }) => {
     setSaving(true);
     
     try {
-      // Firestore'a kaydet
       const updatedCompletedSteps = {
         ...user.completedSteps,
         [section.id]: [...(user.completedSteps?.[section.id] || []), step.id]
@@ -35,11 +34,9 @@ const StepPage = ({ section, step, user, onNavigate, onUserUpdate }) => {
         completedSteps: updatedCompletedSteps
       });
       
-      // Yerel state güncelle
       setIsCompleted(true);
       setSaveSuccess(true);
       
-      // Parent'a bildir
       if (onUserUpdate) {
         onUserUpdate({
           ...user,
@@ -47,7 +44,6 @@ const StepPage = ({ section, step, user, onNavigate, onUserUpdate }) => {
         });
       }
       
-      // Animasyon 2 saniye sonra bitsin
       setTimeout(() => setSaveSuccess(false), 2000);
     } catch (error) {
       console.error('Progress save error:', error);
@@ -86,12 +82,6 @@ const StepPage = ({ section, step, user, onNavigate, onUserUpdate }) => {
     if (getYouTubeId(url)) return 'youtube';
     if (getLoomId(url)) return 'loom';
     return null;
-  };
-
-  const getVideoTitle = (url) => {
-    if (getYouTubeId(url)) return 'YouTube Video';
-    if (getLoomId(url)) return 'Loom Video';
-    return 'Video';
   };
 
   // Video functions
@@ -145,7 +135,7 @@ const StepPage = ({ section, step, user, onNavigate, onUserUpdate }) => {
     const urlRegex = /(https?:\/\/[^\s<]+)/g;
     return content.split(urlRegex).map((part, i) => {
       if (i % 2 === 1) {
-        return `<a href="${part}" target="_blank" rel="noopener noreferrer" class="text-primary-400 hover:text-primary-300 underline decoration-primary-400/50 hover:decoration-primary-300 transition-colors">${part}</a>`;
+        return `<a href="${part}" target="_blank" rel="noopener noreferrer" style="color: #38bdf8; text-decoration: underline; text-decoration-color: rgba(56, 189, 248, 0.5);">${part}</a>`;
       }
       return part;
     }).join('');
@@ -165,26 +155,76 @@ const StepPage = ({ section, step, user, onNavigate, onUserUpdate }) => {
     return 'Link';
   };
 
+  // Styles
+  const pageStyle = { minHeight: '100vh', padding: '32px', maxWidth: '1200px', margin: '0 auto' };
+  const contentStyle = { maxWidth: '100%' };
+  const cardStyle = { backgroundColor: '#1a2234', borderRadius: '16px', border: '1px solid #2d3a4f', padding: '24px' };
+  const sectionTitleStyle = { fontSize: '16px', fontWeight: 600, color: 'white', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' };
+  const labelStyle = { fontSize: '14px', fontWeight: 500, color: '#9ca3af', marginBottom: '8px', display: 'block' };
+  const inputStyle = {
+    width: '100%',
+    height: '44px',
+    backgroundColor: '#151c2c',
+    border: '2px solid #2d3a4f',
+    borderRadius: '12px',
+    padding: '0 12px',
+    fontSize: '14px',
+    color: 'white',
+    outline: 'none',
+    transition: 'all 0.2s'
+  };
+  const inputMultilineStyle = {
+    ...inputStyle,
+    height: 'auto',
+    minHeight: '80px',
+    padding: '12px',
+    resize: 'vertical'
+  };
+
   return (
-    <div className="min-h-screen p-6 md:p-8">
-      <div className="max-w-3xl mx-auto">
+    <div style={pageStyle}>
+      <div style={contentStyle}>
         {/* Header */}
-        <motion.div className="mb-6" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+        <motion.div style={{ marginBottom: '24px' }} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
           <button 
             onClick={() => onNavigate('section', section)}
-            className="flex items-center gap-2 text-gray-400 hover:text-white mb-4 transition-colors text-sm"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              color: '#9ca3af',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: '14px',
+              marginBottom: '16px',
+              padding: 0,
+              transition: 'color 0.2s'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
+            onMouseLeave={(e) => e.currentTarget.style.color = '#9ca3af'}
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft style={{ width: '16px', height: '16px' }} />
             <span>{section.title}</span>
           </button>
           
-          <div className="flex items-center gap-4">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <motion.div 
-              className={`w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold backdrop-blur-md border ${isCompleted 
-                ? 'bg-emerald-600/20 border-emerald-600/30 text-emerald-400 shadow-lg shadow-emerald-600/10' 
-                : 'bg-indigo-600/20 border-indigo-600/30 text-indigo-400 shadow-lg shadow-indigo-600/10'}`}
+              style={{
+                width: '56px',
+                height: '56px',
+                borderRadius: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '20px',
+                fontWeight: 'bold',
+                backdropFilter: 'blur(8px)',
+                border: '1px solid'
+              }}
               animate={saveSuccess ? { scale: [1, 1.15, 1] } : {}}
               transition={{ duration: 0.3 }}
+              className={isCompleted ? 'completed' : 'active'}
             >
               {saveSuccess || isCompleted ? (
                 <motion.div
@@ -192,45 +232,53 @@ const StepPage = ({ section, step, user, onNavigate, onUserUpdate }) => {
                   animate={{ scale: 1, rotate: 0 }}
                   transition={{ type: 'spring', stiffness: 200 }}
                 >
-                  <Check className="w-7 h-7" />
+                  <Check style={{ width: '28px', height: '28px', color: '#34d399' }} />
                 </motion.div>
               ) : (
-                currentIndex + 1
+                <span style={{ color: '#38bdf8' }}>{currentIndex + 1}</span>
               )}
             </motion.div>
             <div>
-              <p className="text-gray-400 text-sm">{section.title} • Adım {currentIndex + 1}/{section.steps.length}</p>
-              <h1 className="text-2xl md:text-3xl font-bold text-white">{step.title}</h1>
+              <p style={{ color: '#9ca3af', fontSize: '14px' }}>{section.title} • Adım {currentIndex + 1}/{section.steps.length}</p>
+              <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: 'white' }}>{step.title}</h1>
             </div>
           </div>
         </motion.div>
 
         {/* Content Card */}
-        <motion.div className="bg-dark-200 rounded-2xl p-6 md:p-8 border border-dark-100 mb-6" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+        <motion.div style={cardStyle} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           
           {/* Videos Section */}
           {videos.some(v => v.url || isAdmin) && (
-            <div className="mb-6">
-              <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-                <Video className="w-5 h-5 text-primary-400" />
+            <div style={{ marginBottom: '24px' }}>
+              <h3 style={sectionTitleStyle}>
+                <Video style={{ width: '20px', height: '20px', color: '#38bdf8' }} />
                 Videolar
               </h3>
               
               {/* Video List - Client View */}
-              <div className="space-y-3">
-                {videos.filter(v => v.url && getEmbedType(v.url)).map((video, idx) => (
-                  <div key={video.id} className="bg-dark-100 rounded-xl overflow-hidden">
-                    <div className="aspect-video">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {videos.filter(v => v.url && getEmbedType(v.url)).map((video) => (
+                  <div key={video.id} style={{ backgroundColor: '#151c2c', borderRadius: '12px', overflow: 'hidden' }}>
+                    <div style={{ aspectRatio: '16/9' }}>
                       {getYouTubeId(video.url) && (
-                        <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${getYouTubeId(video.url)}`} frameBorder="0" allowFullScreen />
+                        <iframe 
+                          style={{ width: '100%', height: '100%', border: 'none' }}
+                          src={`https://www.youtube.com/embed/${getYouTubeId(video.url)}`}
+                          allowFullScreen
+                        />
                       )}
                       {getLoomId(video.url) && (
-                        <iframe className="w-full h-full" src={`https://www.loom.com/embed/${getLoomId(video.url)}`} frameBorder="0" allowFullScreen />
+                        <iframe 
+                          style={{ width: '100%', height: '100%', border: 'none' }}
+                          src={`https://www.loom.com/embed/${getLoomId(video.url)}`}
+                          allowFullScreen
+                        />
                       )}
                     </div>
                     {video.title && (
-                      <div className="p-3 bg-dark-100 border-t border-dark-200">
-                        <p className="text-white text-sm font-medium">{video.title}</p>
+                      <div style={{ padding: '12px', backgroundColor: '#151c2c', borderTop: '1px solid #2d3a4f' }}>
+                        <p style={{ color: 'white', fontSize: '14px', fontWeight: 500 }}>{video.title}</p>
                       </div>
                     )}
                   </div>
@@ -239,14 +287,17 @@ const StepPage = ({ section, step, user, onNavigate, onUserUpdate }) => {
 
               {/* Admin: Add Video */}
               {isAdmin && (
-                <div className="mt-4 space-y-3">
+                <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {videos.map((video, idx) => (
-                    <div key={video.id} className="bg-dark-100 rounded-xl p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-gray-400 text-sm font-medium">Video {idx + 1}</span>
+                    <div key={video.id} style={{ backgroundColor: '#151c2c', borderRadius: '12px', padding: '16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                        <span style={{ color: '#9ca3af', fontSize: '14px', fontWeight: 500 }}>Video {idx + 1}</span>
                         {videos.length > 1 && (
-                          <button onClick={() => deleteVideo(video.id)} className="text-red-400 hover:text-red-300">
-                            <X className="w-4 h-4" />
+                          <button 
+                            onClick={() => deleteVideo(video.id)} 
+                            style={{ color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                          >
+                            <X style={{ width: '16px', height: '16px' }} />
                           </button>
                         )}
                       </div>
@@ -255,19 +306,44 @@ const StepPage = ({ section, step, user, onNavigate, onUserUpdate }) => {
                         value={video.title}
                         onChange={(e) => updateVideo(video.id, 'title', e.target.value)}
                         placeholder="Video başlığı (opsiyonel)"
-                        className="w-full bg-dark-200 border border-dark-200 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 text-sm mb-2"
+                        style={{ ...inputStyle, marginBottom: '8px' }}
                       />
                       <input 
                         type="url"
                         value={video.url}
                         onChange={(e) => updateVideo(video.id, 'url', e.target.value)}
                         placeholder="YouTube veya Loom linki..."
-                        className="w-full bg-dark-200 border border-dark-200 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 text-sm"
+                        style={inputStyle}
                       />
                     </div>
                   ))}
-                  <button onClick={addVideo} className="w-full py-2 border-2 border-dashed border-dark-100 rounded-xl text-gray-400 hover:text-white hover:border-primary-500/50 flex items-center justify-center gap-2 text-sm transition-colors">
-                    <Plus className="w-4 h-4" />
+                  <button 
+                    onClick={addVideo} 
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      border: '2px dashed #2d3a4f',
+                      borderRadius: '12px',
+                      backgroundColor: 'transparent',
+                      color: '#9ca3af',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      fontSize: '14px',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = 'white';
+                      e.currentTarget.style.borderColor = 'rgba(14, 165, 233, 0.5)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = '#9ca3af';
+                      e.currentTarget.style.borderColor = '#2d3a4f';
+                    }}
+                  >
+                    <Plus style={{ width: '16px', height: '16px' }} />
                     Video Ekle
                   </button>
                 </div>
@@ -275,31 +351,51 @@ const StepPage = ({ section, step, user, onNavigate, onUserUpdate }) => {
             </div>
           )}
 
-          {/* Links Section - Client View */}
+          {/* Links Section */}
           {links.some(l => l.url) && (
-            <div className="mb-6 pt-6 border-t border-dark-100">
-              <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-                <Link2 className="w-5 h-5 text-primary-400" />
+            <div style={{ marginBottom: '24px', paddingTop: '24px', borderTop: '1px solid #2d3a4f' }}>
+              <h3 style={sectionTitleStyle}>
+                <Link2 style={{ width: '20px', height: '20px', color: '#38bdf8' }} />
                 Linkler
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '12px' }}>
                 {links.filter(l => l.url).map((link) => (
                   <a 
                     key={link.id}
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-4 bg-dark-100 rounded-xl hover:bg-dark-100/80 transition-colors group"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '16px',
+                      backgroundColor: '#151c2c',
+                      borderRadius: '12px',
+                      textDecoration: 'none',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(21, 28, 44, 0.8)'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#151c2c'}
                   >
-                    <div className="w-10 h-10 rounded-lg bg-primary-500/20 flex items-center justify-center flex-shrink-0">
-                      <ExternalLink className="w-5 h-5 text-primary-400" />
+                    <div style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '10px',
+                      backgroundColor: 'rgba(14, 165, 233, 0.2)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0
+                    }}>
+                      <ExternalLink style={{ width: '20px', height: '20px', color: '#38bdf8' }} />
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-white font-medium truncate group-hover:text-primary-400 transition-colors">
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <p style={{ color: 'white', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {getLinkDisplayTitle(link)}
                       </p>
                       {link.title && (
-                        <p className="text-gray-500 text-xs truncate">{link.url}</p>
+                        <p style={{ color: '#6b7280', fontSize: '12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{link.url}</p>
                       )}
                     </div>
                   </a>
@@ -308,29 +404,49 @@ const StepPage = ({ section, step, user, onNavigate, onUserUpdate }) => {
             </div>
           )}
 
-          {/* PDFs Section - Client View */}
+          {/* PDFs Section */}
           {pdfs.some(p => p.file) && (
-            <div className="mb-6 pt-6 border-t border-dark-100">
-              <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-                <FileText className="w-5 h-5 text-primary-400" />
+            <div style={{ marginBottom: '24px', paddingTop: '24px', borderTop: '1px solid #2d3a4f' }}>
+              <h3 style={sectionTitleStyle}>
+                <FileText style={{ width: '20px', height: '20px', color: '#38bdf8' }} />
                 PDF Dosyaları
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '12px' }}>
                 {pdfs.filter(p => p.file).map((pdf) => (
                   <a 
                     key={pdf.id}
                     href={pdf.file}
                     download={pdf.name}
-                    className="flex items-center gap-3 p-4 bg-dark-100 rounded-xl hover:bg-dark-100/80 transition-colors group"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '16px',
+                      backgroundColor: '#151c2c',
+                      borderRadius: '12px',
+                      textDecoration: 'none',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(21, 28, 44, 0.8)'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#151c2c'}
                   >
-                    <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                      <FileText className="w-5 h-5 text-emerald-400" />
+                    <div style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '10px',
+                      backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0
+                    }}>
+                      <FileText style={{ width: '20px', height: '20px', color: '#34d399' }} />
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-white font-medium truncate group-hover:text-primary-400 transition-colors">
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <p style={{ color: 'white', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {pdf.name.replace('.pdf', '')}
                       </p>
-                      <p className="text-gray-500 text-xs">PDF • İndirmek için tıkla</p>
+                      <p style={{ color: '#6b7280', fontSize: '12px' }}>PDF • İndirmek için tıkla</p>
                     </div>
                   </a>
                 ))}
@@ -342,20 +458,20 @@ const StepPage = ({ section, step, user, onNavigate, onUserUpdate }) => {
           {isAdmin && (
             <>
               {/* Admin Links Input */}
-              <div className="mb-6 pt-6 border-t border-dark-100">
-                <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-                  <Link2 className="w-5 h-5 text-primary-400" />
+              <div style={{ marginBottom: '24px', paddingTop: '24px', borderTop: '1px solid #2d3a4f' }}>
+                <h3 style={sectionTitleStyle}>
+                  <Link2 style={{ width: '20px', height: '20px', color: '#38bdf8' }} />
                   Link Ekle (Admin)
                 </h3>
 
-                <div className="space-y-3">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {links.map((link, idx) => (
-                    <div key={link.id} className="bg-dark-100 rounded-xl p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-gray-400 text-sm">Link {idx + 1}</span>
+                    <div key={link.id} style={{ backgroundColor: '#151c2c', borderRadius: '12px', padding: '16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                        <span style={{ color: '#9ca3af', fontSize: '14px' }}>Link {idx + 1}</span>
                         {links.length > 1 && (
-                          <button onClick={() => deleteLink(link.id)} className="text-red-400 hover:text-red-300">
-                            <X className="w-4 h-4" />
+                          <button onClick={() => deleteLink(link.id)} style={{ color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                            <X style={{ width: '16px', height: '16px' }} />
                           </button>
                         )}
                       </div>
@@ -364,62 +480,122 @@ const StepPage = ({ section, step, user, onNavigate, onUserUpdate }) => {
                         value={link.title}
                         onChange={(e) => updateLink(link.id, 'title', e.target.value)}
                         placeholder="Link başlığı (müşteri burayı görecek)"
-                        className="w-full bg-dark-200 border border-dark-200 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 text-sm mb-2"
+                        style={{ ...inputStyle, marginBottom: '8px' }}
                       />
                       <input 
                         type="url"
                         value={link.url}
                         onChange={(e) => updateLink(link.id, 'url', e.target.value)}
                         placeholder="https://..."
-                        className="w-full bg-dark-200 border border-dark-200 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 text-sm"
+                        style={inputStyle}
                       />
                     </div>
                   ))}
-                  <button onClick={addLink} className="w-full py-2 border-2 border-dashed border-dark-100 rounded-xl text-gray-400 hover:text-white hover:border-primary-500/50 flex items-center justify-center gap-2 text-sm transition-colors">
-                    <Plus className="w-4 h-4" />
+                  <button 
+                    onClick={addLink} 
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      border: '2px dashed #2d3a4f',
+                      borderRadius: '12px',
+                      backgroundColor: 'transparent',
+                      color: '#9ca3af',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      fontSize: '14px',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = 'white';
+                      e.currentTarget.style.borderColor = 'rgba(14, 165, 233, 0.5)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = '#9ca3af';
+                      e.currentTarget.style.borderColor = '#2d3a4f';
+                    }}
+                  >
+                    <Plus style={{ width: '16px', height: '16px' }} />
                     Link Ekle
                   </button>
                 </div>
               </div>
 
               {/* Admin PDFs Input */}
-              <div className="mb-6 pt-6 border-t border-dark-100">
-                <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-primary-400" />
+              <div style={{ marginBottom: '24px', paddingTop: '24px', borderTop: '1px solid #2d3a4f' }}>
+                <h3 style={sectionTitleStyle}>
+                  <FileText style={{ width: '20px', height: '20px', color: '#38bdf8' }} />
                   PDF Ekle (Admin)
                 </h3>
-                <div className="space-y-3">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {pdfs.map((pdf, idx) => (
-                    <div key={pdf.id} className="bg-dark-100 rounded-xl p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-gray-400 text-sm">PDF {idx + 1}</span>
+                    <div key={pdf.id} style={{ backgroundColor: '#151c2c', borderRadius: '12px', padding: '16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                        <span style={{ color: '#9ca3af', fontSize: '14px' }}>PDF {idx + 1}</span>
                         {pdfs.length > 1 && (
-                          <button onClick={() => deletePdf(pdf.id)} className="text-red-400 hover:text-red-300">
-                            <X className="w-4 h-4" />
+                          <button onClick={() => deletePdf(pdf.id)} style={{ color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                            <X style={{ width: '16px', height: '16px' }} />
                           </button>
                         )}
                       </div>
                       {pdf.file ? (
-                        <div className="flex items-center justify-between bg-dark-200 rounded-lg p-3">
-                          <div className="flex items-center gap-3 min-w-0">
-                            <FileText className="w-5 h-5 text-primary-400 flex-shrink-0" />
-                            <span className="text-white text-sm truncate">{pdf.name}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#1a2234', borderRadius: '12px', padding: '12px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                            <FileText style={{ width: '20px', height: '20px', color: '#38bdf8', flexShrink: 0 }} />
+                            <span style={{ color: 'white', fontSize: '14px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pdf.name}</span>
                           </div>
-                          <a href={pdf.file} download={pdf.name} className="text-primary-400 hover:text-primary-300 flex-shrink-0">
-                            <Upload className="w-4 h-4" />
+                          <a href={pdf.file} download={pdf.name} style={{ color: '#38bdf8', flexShrink: 0 }}>
+                            <Upload style={{ width: '16px', height: '16px' }} />
                           </a>
                         </div>
                       ) : (
-                        <label className="flex items-center justify-center gap-2 py-4 border-2 border-dashed border-dark-200 rounded-lg cursor-pointer hover:border-primary-500/50 transition-colors">
-                          <Upload className="w-4 h-4 text-gray-500" />
-                          <span className="text-gray-500 text-sm">PDF seç</span>
-                          <input type="file" accept=".pdf" className="hidden" onChange={(e) => e.target.files[0] && handlePdfUpload(pdf.id, e.target.files[0])} />
+                        <label style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px',
+                          padding: '16px',
+                          border: '2px dashed #2d3a4f',
+                          borderRadius: '12px',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}>
+                          <Upload style={{ width: '16px', height: '16px', color: '#6b7280' }} />
+                          <span style={{ color: '#6b7280', fontSize: '14px' }}>PDF seç</span>
+                          <input type="file" accept=".pdf" style={{ display: 'none' }} onChange={(e) => e.target.files[0] && handlePdfUpload(pdf.id, e.target.files[0])} />
                         </label>
                       )}
                     </div>
                   ))}
-                  <button onClick={addPdf} className="w-full py-2 border-2 border-dashed border-dark-100 rounded-xl text-gray-400 hover:text-white hover:border-primary-500/50 flex items-center justify-center gap-2 text-sm transition-colors">
-                    <Plus className="w-4 h-4" />
+                  <button 
+                    onClick={addPdf} 
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      border: '2px dashed #2d3a4f',
+                      borderRadius: '12px',
+                      backgroundColor: 'transparent',
+                      color: '#9ca3af',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      fontSize: '14px',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = 'white';
+                      e.currentTarget.style.borderColor = 'rgba(14, 165, 233, 0.5)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = '#9ca3af';
+                      e.currentTarget.style.borderColor = '#2d3a4f';
+                    }}
+                  >
+                    <Plus style={{ width: '16px', height: '16px' }} />
                     PDF Ekle
                   </button>
                 </div>
@@ -428,70 +604,108 @@ const StepPage = ({ section, step, user, onNavigate, onUserUpdate }) => {
           )}
 
           {/* Yapilacaklar Section */}
-          <div className="pt-6 border-t border-dark-100">
-            <h3 className="text-white font-semibold mb-4">Yapılacaklar</h3>
-            <p className="text-gray-400 mb-4">{step.description}</p>
+          <div style={{ paddingTop: '24px', borderTop: '1px solid #2d3a4f' }}>
+            <h3 style={{ ...sectionTitleStyle, marginBottom: '16px' }}>Yapılacaklar</h3>
+            <p style={{ color: '#9ca3af', marginBottom: '16px' }}>{step.description}</p>
             <div 
-              className="prose prose-invert prose-sm max-w-none text-gray-300"
-              dangerouslySetInnerHTML={{ __html: renderContent(step.content) || '<p class="text-gray-500">Bu adım için içerik yakında eklenecek.</p>' }}
+              style={{ color: '#d1d5db', fontSize: '14px', lineHeight: 1.6 }}
+              dangerouslySetInnerHTML={{ __html: renderContent(step.content) || '<p style="color: #6b7280">Bu adım için içerik yakında eklenecek.</p>' }}
             />
           </div>
         </motion.div>
 
         {/* Progress */}
-        <motion.div className="mb-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-          <div className="flex items-center gap-1.5">
-            {section.steps.map((s, i) => (
-              <div 
-                key={s.id}
-                className={`h-2 flex-1 rounded-full transition-all duration-500 ${
-                  i <= currentIndex 
-                    ? s.id === step.id && isCompleted
-                      ? 'bg-emerald-600'
-                      : s.id === step.id
-                        ? 'bg-indigo-600'
-                        : user.completedSteps?.[section.id]?.includes(s.id)
-                          ? 'bg-emerald-600/70'
-                          : 'bg-indigo-500/40'
-                    : 'bg-dark-300'
-                }`}
-              />
-            ))}
+        <motion.div style={{ marginBottom: '24px' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            {section.steps.map((s, i) => {
+              const isDone = i < currentIndex || (i === currentIndex && isCompleted);
+              const isCurrent = i === currentIndex;
+              const isPending = i > currentIndex;
+              
+              return (
+                <div 
+                  key={s.id}
+                  style={{
+                    height: '8px',
+                    flex: 1,
+                    borderRadius: '9999px',
+                    transition: 'all 0.5s',
+                    backgroundColor: isDone ? (isCurrent && isCompleted ? '#059669' : isCurrent ? '#0ea5e9' : 'rgba(16, 185, 129, 0.7)') : 
+                               isCurrent ? '#0ea5e9' : '#151c2c'
+                  }}
+                />
+              );
+            })}
           </div>
         </motion.div>
 
         {/* Navigation */}
-        <motion.div className="flex items-center justify-between gap-4 pb-8" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+        <motion.div 
+          style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between', 
+            gap: '16px', 
+            paddingBottom: '32px' 
+          }} 
+          initial={{ opacity: 0, y: 10 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          transition={{ delay: 0.3 }}
+        >
           <button 
             onClick={handlePrev}
             disabled={!hasPrev && currentIndex === 0}
-            className={`flex items-center gap-2 px-5 py-3 rounded-xl transition-all duration-300 text-sm ${
-              hasPrev || currentIndex > 0
-                ? 'bg-dark-200 hover:bg-dark-100 text-white border border-dark-100'
-                : 'bg-dark-300 text-gray-500 cursor-not-allowed border border-dark-300'
-            }`}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '12px 20px',
+              borderRadius: '12px',
+              fontSize: '14px',
+              fontWeight: 500,
+              transition: 'all 0.3s',
+              ...((hasPrev || currentIndex > 0) 
+                ? { backgroundColor: '#1a2234', color: 'white', border: '1px solid #2d3a4f', cursor: 'pointer' }
+                : { backgroundColor: '#151c2c', color: '#6b7280', border: '1px solid #2d3a4f', cursor: 'not-allowed' })
+            }}
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft style={{ width: '20px', height: '20px' }} />
             Önceki
           </button>
 
-          <div className="flex items-center gap-3">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             {!isCompleted && (
               <motion.button 
                 onClick={handleComplete} 
                 disabled={saving}
-                className={`flex items-center gap-2 px-5 py-3 rounded-xl transition-all duration-300 text-sm ${
-                  saving 
-                    ? 'bg-dark-300 text-gray-500 cursor-not-allowed' 
-                    : 'btn-primary'
-                }`}
                 whileHover={saving ? {} : { scale: 1.02 }}
                 whileTap={saving ? {} : { scale: 0.98 }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '12px 20px',
+                  borderRadius: '12px',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  backgroundColor: saving ? '#151c2c' : '#0ea5e9',
+                  color: 'white',
+                  border: 'none',
+                  cursor: saving ? 'not-allowed' : 'pointer',
+                  opacity: saving ? 0.5 : 1,
+                  transition: 'all 0.3s'
+                }}
               >
                 {saving ? (
                   <>
                     <motion.div
-                      className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
+                      style={{
+                        width: '16px',
+                        height: '16px',
+                        border: '2px solid rgba(255,255,255,0.3)',
+                        borderTopColor: 'white',
+                        borderRadius: '50%'
+                      }}
                       animate={{ rotate: 360 }}
                       transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                     />
@@ -499,21 +713,39 @@ const StepPage = ({ section, step, user, onNavigate, onUserUpdate }) => {
                   </>
                 ) : saveSuccess ? (
                   <>
-                    <Check className="w-4 h-4" />
+                    <Check style={{ width: '16px', height: '16px' }} />
                     Kaydedildi
                   </>
                 ) : (
                   <>
-                    <Save className="w-4 h-4" />
+                    <Save style={{ width: '16px', height: '16px' }} />
                     Tamamla
                   </>
                 )}
               </motion.button>
             )}
             
-            <button onClick={handleNext} className="btn-primary text-sm py-3">
+            <button 
+              onClick={handleNext} 
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '12px 20px',
+                borderRadius: '12px',
+                fontSize: '14px',
+                fontWeight: 500,
+                backgroundColor: '#0ea5e9',
+                color: 'white',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.3s'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#0284c7'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#0ea5e9'}
+            >
               {isCompleted ? (hasNext ? 'Sonraki' : 'Bitir') : 'Geç'}
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight style={{ width: '16px', height: '16px' }} />
             </button>
           </div>
         </motion.div>

@@ -27,126 +27,177 @@ const Dashboard = ({ user, onNavigate }) => {
   const lockedCount = SECTIONS.length - completedCount - 1;
   const activeCount = 1;
 
+  // Styles
+  const cardStyle = { backgroundColor: '#1a2234', borderRadius: '16px', border: '1px solid #2d3a4f', padding: '24px' };
+  const statCardStyle = { ...cardStyle, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '16px' };
+  const titleStyle = { fontSize: '32px', fontWeight: 'bold', color: 'white' };
+  const subtitleStyle = { color: '#9ca3af', fontSize: '18px' };
+  const statNumberStyle = { fontSize: '40px', fontWeight: 'bold', color: 'white' };
+  const statLabelStyle = { color: '#6b7280', fontSize: '14px' };
+  const sectionTitleStyle = { fontSize: '20px', fontWeight: '600', color: 'white' };
+
   return (
-    <div className="p-4 md:p-8 pb-24 md:pb-8">
+    <div className="w-full">
       {/* Welcome Header */}
       <motion.div 
-        className="bg-gradient-to-r from-primary-500/20 via-primary-500/10 to-transparent rounded-2xl md:rounded-3xl p-5 md:p-8 mb-6 border border-primary-500/20"
+        style={{
+          background: 'linear-gradient(to right, rgba(14, 165, 233, 0.2), rgba(14, 165, 233, 0.1), transparent)',
+          borderRadius: '16px',
+          padding: '32px',
+          marginBottom: '32px',
+          border: '1px solid rgba(14, 165, 233, 0.2)'
+        }}
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="text-2xl md:text-4xl font-bold text-white capitalize">
-          {user.name.split(' ')[0]}'ın Mentörlük Sayfası
+        <h1 style={titleStyle}>
+          {user.name.split(' ')[0].charAt(0).toUpperCase() + user.name.split(' ')[0].slice(1)}'ın Mentörlük Sayfası
         </h1>
       </motion.div>
 
       {/* Stats Cards - Responsive Grid */}
       <motion.div 
-        className="grid grid-cols-3 gap-3 md:gap-6 mb-6"
+        style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(3, 1fr)', 
+          gap: '24px', 
+          marginBottom: '32px' 
+        }}
+        className="grid-cols-1 md:grid-cols-3"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
       >
-        <div className="bg-dark-200 rounded-xl md:rounded-2xl p-4 md:p-6 border border-dark-100">
-          <div className="flex flex-col items-center text-center gap-3">
-            <CheckCircle2 className="w-6 h-6 md:w-8 md:h-8 text-emerald-400" />
-            <p className="text-2xl md:text-3xl font-bold text-white">{completedCount}</p>
-            <p className="text-gray-500 text-xs md:text-sm">Tamamlanan</p>
-          </div>
+        {/* Completed */}
+        <div style={statCardStyle}>
+          <CheckCircle2 style={{ width: '32px', height: '32px', color: '#34d399' }} />
+          <p style={statNumberStyle}>{completedCount}</p>
+          <p style={statLabelStyle}>Tamamlanan</p>
         </div>
 
-        <div className="bg-dark-200 rounded-xl md:rounded-2xl p-4 md:p-6 border border-dark-100">
-          <div className="flex flex-col items-center text-center gap-3">
-            <Zap className="w-6 h-6 md:w-8 md:h-8 text-amber-400" />
-            <p className="text-2xl md:text-3xl font-bold text-white">{activeCount}</p>
-            <p className="text-gray-500 text-xs md:text-sm">Açık</p>
-          </div>
+        {/* Active */}
+        <div style={statCardStyle}>
+          <Zap style={{ width: '32px', height: '32px', color: '#fbbf24' }} />
+          <p style={statNumberStyle}>{activeCount}</p>
+          <p style={statLabelStyle}>Açık</p>
         </div>
 
-        <div className="bg-dark-200 rounded-xl md:rounded-2xl p-4 md:p-6 border border-dark-100">
-          <div className="flex flex-col items-center text-center gap-3">
-            <Lock className="w-6 h-6 md:w-8 md:h-8 text-gray-400" />
-            <p className="text-2xl md:text-3xl font-bold text-white">{lockedCount}</p>
-            <p className="text-gray-500 text-xs md:text-sm">Kilitli</p>
-          </div>
+        {/* Locked */}
+        <div style={statCardStyle}>
+          <Lock style={{ width: '32px', height: '32px', color: '#6b7280' }} />
+          <p style={statNumberStyle}>{lockedCount}</p>
+          <p style={statLabelStyle}>Kilitli</p>
         </div>
       </motion.div>
 
-      {/* Timeline Card */}
-      <motion.div 
-        className="bg-dark-200 rounded-2xl p-5 md:p-8 mb-6 border border-dark-100"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-      >
-        <div className="flex items-center gap-3 mb-4">
-          <Calendar className="w-5 h-5 text-primary-400" />
-          <h2 className="text-lg font-semibold text-white">Süreç Takvimi</h2>
-          <span className="text-gray-500 text-sm ml-auto hidden md:inline">{endMonth}'da bitiş</span>
-        </div>
+      {/* Two Column Layout for Desktop */}
+      <div className="grid-cols-1 lg:grid-cols-2" style={{ display: 'grid', gap: '24px', marginBottom: '32px' }}>
+        {/* Timeline Card */}
+        <motion.div 
+          style={{ ...cardStyle }}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+            <Calendar style={{ width: '24px', height: '24px', color: '#38bdf8' }} />
+            <h2 style={sectionTitleStyle}>Süreç Takvimi</h2>
+            <span style={{ color: '#6b7280', fontSize: '16px', marginLeft: 'auto' }}>{endMonth}'da bitiş</span>
+          </div>
 
-        {/* Date Stats - Grid */}
-        <div className="grid grid-cols-3 gap-3 mb-4">
-          <div className="bg-dark-300/50 rounded-xl p-3 text-center">
-            <p className="text-gray-500 text-xs font-medium mb-1">Başlangıç</p>
-            <p className="text-white font-semibold text-sm">{startDate.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}</p>
+          {/* Date Stats */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '24px' }}>
+            <div style={{ backgroundColor: 'rgba(21, 28, 44, 0.5)', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
+              <p style={{ color: '#6b7280', fontSize: '14px', fontWeight: 500, marginBottom: '8px' }}>Başlangıç</p>
+              <p style={{ color: 'white', fontSize: '16px', fontWeight: 600 }}>
+                {startDate.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}
+              </p>
+            </div>
+            <div style={{ backgroundColor: 'rgba(21, 28, 44, 0.5)', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
+              <p style={{ color: '#6b7280', fontSize: '14px', fontWeight: 500, marginBottom: '8px' }}>Geçen</p>
+              <p style={{ color: '#38bdf8', fontWeight: 'bold', fontSize: '32px' }}>{daysPassed}</p>
+            </div>
+            <div style={{ backgroundColor: 'rgba(21, 28, 44, 0.5)', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
+              <p style={{ color: '#6b7280', fontSize: '14px', fontWeight: 500, marginBottom: '8px' }}>Kalan</p>
+              <p style={{ color: '#fbbf24', fontWeight: 'bold', fontSize: '32px' }}>{daysRemaining}</p>
+            </div>
           </div>
-          <div className="bg-dark-300/50 rounded-xl p-3 text-center">
-            <p className="text-gray-500 text-xs font-medium mb-1">Geçen</p>
-            <p className="text-primary-400 font-bold text-2xl">{daysPassed}</p>
-          </div>
-          <div className="bg-dark-300/50 rounded-xl p-3 text-center">
-            <p className="text-gray-500 text-xs font-medium mb-1">Kalan</p>
-            <p className="text-amber-400 font-bold text-2xl">{daysRemaining}</p>
-          </div>
-        </div>
 
-        {/* Progress Bar */}
-        <div className="relative">
-          <div className="h-2.5 bg-dark-300 rounded-full overflow-hidden">
-            <motion.div 
-              className={`h-full rounded-full ${
-                progressPercent > 100 ? 'bg-red-500' : 'bg-gradient-to-r from-primary-500 to-primary-400'
-              }`}
-              initial={{ width: 0 }}
-              animate={{ width: `${Math.min(progressPercent, 100)}%` }}
-              transition={{ duration: 1, ease: "easeOut" }}
-            />
+          {/* Progress Bar */}
+          <div style={{ position: 'relative' }}>
+            <div style={{ height: '12px', backgroundColor: '#151c2c', borderRadius: '9999px', overflow: 'hidden' }}>
+              <motion.div 
+                style={{
+                  height: '100%',
+                  borderRadius: '9999px',
+                  background: progressPercent > 100 
+                    ? '#ef4444' 
+                    : 'linear-gradient(to right, #0ea5e9, #38bdf8)'
+                }}
+                initial={{ width: 0 }}
+                animate={{ width: `${Math.min(progressPercent, 100)}%` }}
+                transition={{ duration: 1, ease: 'easeOut' }}
+              />
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '12px' }}>
+              <span style={{ 
+                fontSize: '14px', 
+                color: progressPercent > 100 ? '#f87171' : '#9ca3af' 
+              }}>
+                {progressPercent > 100 ? `${progressPercent - 100}% geç` : `${100 - progressPercent}% kaldı`}
+              </span>
+              <span style={{ fontSize: '14px', color: '#6b7280' }}>{progressPercent}%</span>
+            </div>
           </div>
-          <div className="flex justify-between mt-2">
-            <span className={`text-xs ${progressPercent > 100 ? 'text-red-400' : 'text-gray-400'}`}>
-              {progressPercent > 100 ? `${progressPercent - 100}% geç` : `${100 - progressPercent}% kaldı`}
-            </span>
-            <span className="text-xs text-gray-500">{progressPercent}%</span>
-          </div>
-        </div>
+        </motion.div>
 
-        {/* Mobile end date */}
-        <p className="text-gray-500 text-sm mt-3 md:hidden">{endMonth}'da bitiş</p>
-      </motion.div>
-
-      {/* Current Section */}
-      <motion.div 
-        className="bg-gradient-to-r from-primary-500/10 to-transparent rounded-2xl p-5 md:p-8 border border-primary-500/20"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-      >
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div className="flex-1">
-            <p className="text-primary-400 text-sm font-medium mb-1">Şu An Burada Olmalısın</p>
-            <h3 className="text-xl md:text-2xl font-bold text-white mb-1">{firstSection.title}</h3>
-            <p className="text-gray-400 text-sm">{firstSection.subtitle}</p>
+        {/* Current Section */}
+        <motion.div 
+          style={{
+            background: 'linear-gradient(to right, rgba(14, 165, 233, 0.1), transparent)',
+            borderRadius: '16px',
+            padding: '24px',
+            border: '1px solid rgba(14, 165, 233, 0.2)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between'
+          }}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <div>
+            <p style={{ color: '#38bdf8', fontSize: '16px', fontWeight: 500, marginBottom: '8px' }}>Şu An Burada Olmalısın</p>
+            <h3 style={{ fontSize: '24px', fontWeight: 'bold', color: 'white', marginBottom: '8px' }}>{firstSection.title}</h3>
+            <p style={{ color: '#9ca3af', fontSize: '16px' }}>{firstSection.subtitle}</p>
           </div>
           <button 
             onClick={() => onNavigate('section', firstSection)}
-            className="btn-primary w-full md:w-auto justify-center"
+            style={{
+              width: '100%',
+              height: '56px',
+              backgroundColor: '#0ea5e9',
+              color: 'white',
+              fontWeight: 600,
+              fontSize: '16px',
+              borderRadius: '12px',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              marginTop: '24px',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#0284c7'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#0ea5e9'}
           >
             Bölüme Git
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight style={{ width: '24px', height: '24px' }} />
           </button>
-        </div>
-      </motion.div>
+        </motion.div>
+      </div>
     </div>
   );
 };

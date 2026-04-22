@@ -7,17 +7,14 @@ import {
 } from 'lucide-react';
 
 const SectionPage = ({ section, user, onNavigate }) => {
-  // Local state for demo - in production this will come from Firebase
   const [completedSteps, setCompletedSteps] = useState(user.completedSteps?.[section.id] || []);
   
   const handleStepClick = (step, index) => {
-    // First step is always accessible
     if (index === 0) {
       onNavigate('step', section, step);
       return;
     }
     
-    // Check if previous step is completed
     const prevStep = section.steps[index - 1];
     if (prevStep && completedSteps.includes(prevStep.id)) {
       onNavigate('step', section, step);
@@ -36,47 +33,127 @@ const SectionPage = ({ section, user, onNavigate }) => {
   const totalCount = section.steps.length;
   const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
+  // Circle button styles
+  const getCircleStyle = (status) => {
+    const base = {
+      width: '72px',
+      height: '72px',
+      borderRadius: '50%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: '28px',
+      fontWeight: 'bold',
+      transition: 'all 0.3s',
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
+    };
+
+    switch (status) {
+      case 'completed':
+        return {
+          ...base,
+          background: 'linear-gradient(to bottom right, #10b981, #059669)',
+          color: 'white',
+          boxShadow: '0 4px 16px rgba(16, 185, 129, 0.4)'
+        };
+      case 'active':
+        return {
+          ...base,
+          background: 'linear-gradient(to bottom right, #0ea5e9, #0284c7)',
+          color: 'white',
+          boxShadow: '0 4px 16px rgba(14, 165, 233, 0.4)'
+        };
+      case 'unlocked':
+        return {
+          ...base,
+          backgroundColor: '#1a2234',
+          color: 'white',
+          border: '4px solid rgba(14, 165, 233, 0.5)'
+        };
+      case 'locked':
+      default:
+        return {
+          ...base,
+          backgroundColor: '#151c2c',
+          color: '#6b7280',
+          border: '4px solid #2d3a4f',
+          cursor: 'not-allowed'
+        };
+    }
+  };
+
+  // Page styles
+  const pageStyle = { padding: '24px', maxWidth: '100%' };
+  const cardStyle = { backgroundColor: '#1a2234', borderRadius: '16px', border: '1px solid #2d3a4f', padding: '24px' };
+
   return (
-    <div className="p-6 md:p-8 pb-24 md:pb-8">
+    <div style={pageStyle}>
       {/* Header */}
       <motion.div 
-        className="mb-6"
+        style={{ marginBottom: '32px' }}
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
       >
         <button 
           onClick={() => onNavigate('sections')}
-          className="flex items-center gap-2 text-gray-400 hover:text-white mb-4 transition-colors text-sm"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            color: '#9ca3af',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            fontSize: '14px',
+            marginBottom: '16px',
+            padding: 0,
+            transition: 'color 0.2s'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
+          onMouseLeave={(e) => e.currentTarget.style.color = '#9ca3af'}
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft style={{ width: '16px', height: '16px' }} />
           <span>Bölümlere Dön</span>
         </button>
         
-        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '16px' }}>
           <div>
-            <h1 className="text-2xl md:text-4xl font-bold text-white mb-1">{section.title}</h1>
-            <p className="text-gray-400 text-sm">{section.subtitle}</p>
+            <h1 style={{ fontSize: '32px', fontWeight: 'bold', color: 'white', marginBottom: '8px' }}>{section.title}</h1>
+            <p style={{ color: '#9ca3af', fontSize: '16px' }}>{section.subtitle}</p>
           </div>
-          <div className="flex items-center gap-3 bg-dark-200 px-4 py-2 rounded-xl border border-dark-100">
-            <span className="text-gray-400 text-sm">{section.duration} gün süre</span>
+          <div style={{ 
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '12px',
+            backgroundColor: '#1a2234',
+            padding: '12px 20px',
+            borderRadius: '12px',
+            border: '1px solid #2d3a4f',
+            alignSelf: 'flex-start'
+          }}>
+            <span style={{ color: '#9ca3af', fontSize: '14px' }}>{section.duration} gün süre</span>
           </div>
         </div>
       </motion.div>
 
       {/* Progress */}
       <motion.div 
-        className="bg-dark-200 rounded-2xl p-4 mb-8 border border-dark-100"
+        style={{ ...cardStyle, marginBottom: '32px' }}
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
       >
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-gray-400 text-sm">İlerleme</span>
-          <span className="text-white font-medium text-sm">{completedCount}/{totalCount} adım</span>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+          <span style={{ color: '#9ca3af', fontSize: '16px' }}>İlerleme</span>
+          <span style={{ color: 'white', fontWeight: 600, fontSize: '16px' }}>{completedCount}/{totalCount} adım</span>
         </div>
-        <div className="h-2 bg-dark-300 rounded-full overflow-hidden">
+        <div style={{ height: '10px', backgroundColor: '#151c2c', borderRadius: '9999px', overflow: 'hidden' }}>
           <motion.div 
-            className="h-full bg-gradient-to-r from-primary-500 to-primary-400 rounded-full"
+            style={{
+              height: '100%',
+              background: 'linear-gradient(to right, #0ea5e9, #38bdf8)',
+              borderRadius: '9999px'
+            }}
             initial={{ width: 0 }}
             animate={{ width: `${progressPercent}%` }}
             transition={{ duration: 0.5 }}
@@ -84,9 +161,15 @@ const SectionPage = ({ section, user, onNavigate }) => {
         </div>
       </motion.div>
 
-      {/* Circle Grid - 3 per row mobile */}
+      {/* Circle Grid - Responsive */}
       <motion.div 
-        className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6 justify-items-center"
+        style={{ 
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
+          gap: '24px',
+          justifyItems: 'center'
+        }}
+        className="grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
@@ -98,7 +181,7 @@ const SectionPage = ({ section, user, onNavigate }) => {
           return (
             <motion.div
               key={step.id}
-              className="flex flex-col items-center"
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
               initial={{ opacity: 0, scale: 0 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: index * 0.05 }}
@@ -109,32 +192,26 @@ const SectionPage = ({ section, user, onNavigate }) => {
                 disabled={!isClickable}
                 whileHover={isClickable ? { scale: 1.1 } : {}}
                 whileTap={isClickable ? { scale: 0.95 } : {}}
-                className={`
-                  w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center text-2xl md:text-3xl font-bold transition-all duration-300 shadow-lg
-                  ${status === 'completed' 
-                    ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-emerald-500/40'
-                    : status === 'active'
-                      ? 'bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-primary-500/40 ring-4 ring-primary-500/30'
-                      : status === 'unlocked'
-                        ? 'bg-dark-200 text-white border-4 border-primary-500/50 hover:border-primary-500'
-                        : 'bg-dark-300 text-gray-500 cursor-not-allowed border-4 border-dark-100'
-                  }
-                `}
+                style={getCircleStyle(status)}
               >
                 {status === 'completed' ? (
-                  <CheckCircle2 className="w-8 h-8 md:w-10 md:h-10" />
+                  <CheckCircle2 style={{ width: '36px', height: '36px' }} />
                 ) : status === 'locked' ? (
-                  <Lock className="w-6 h-6 md:w-7 md:h-7" />
+                  <Lock style={{ width: '28px', height: '28px' }} />
                 ) : (
                   <span>{index + 1}</span>
                 )}
               </motion.button>
               
               {/* Label */}
-              <p className={`
-                mt-3 text-xs md:text-sm font-medium
-                ${status === 'completed' ? 'text-emerald-400' : status === 'active' ? 'text-primary-400' : status === 'unlocked' ? 'text-gray-300' : 'text-gray-500'}
-              `}>
+              <p style={{
+                marginTop: '16px',
+                fontSize: '15px',
+                fontWeight: 500,
+                color: status === 'completed' ? '#34d399' : 
+                       status === 'active' ? '#38bdf8' : 
+                       status === 'unlocked' ? '#e5e7eb' : '#6b7280'
+              }}>
                 {index + 1}. Adım
               </p>
             </motion.div>
@@ -144,7 +221,7 @@ const SectionPage = ({ section, user, onNavigate }) => {
 
       {/* Hint */}
       <motion.p 
-        className="text-center text-gray-500 text-sm mt-8"
+        style={{ textAlign: 'center', color: '#6b7280', fontSize: '15px', marginTop: '40px' }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
