@@ -1,22 +1,48 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { AlertCircle, Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import { signInWithEmail } from '../firebase/client';
+import { AlertCircle, Mail, Lock, Eye, EyeOff, User, Briefcase, UserPlus } from 'lucide-react';
+import { signInWithEmail, signUp } from '../firebase/client';
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [industry, setIndustry] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isRegister, setIsRegister] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setSuccess(null);
     
     try {
-      await signInWithEmail(email, password);
+      if (isRegister) {
+        // Kayıt işlemi
+        if (!name.trim()) {
+          setError('Lütfen adınızı girin.');
+          setLoading(false);
+          return;
+        }
+        const result = await signUp(email, password, name);
+        if (result.success) {
+          setSuccess('Kaydınız alındı! Admin onayından sonra giriş yapabilirsiniz.');
+          setEmail('');
+          setPassword('');
+          setName('');
+          setIndustry('');
+          setIsRegister(false);
+        } else {
+          setError(result.error || 'Kayıt başarısız.');
+        }
+      } else {
+        // Giriş işlemi
+        await signInWithEmail(email, password);
+      }
     } catch (err) {
       if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
         setError('E-posta veya şifre hatalı.');
@@ -26,11 +52,13 @@ export default function LoginPage() {
         setError('Geçersiz e-posta adresi.');
       } else if (err.code === 'auth/too-many-requests') {
         setError('Çok fazla deneme. Daha sonra tekrar deneyin.');
+      } else if (err.code === 'auth/user-disabled') {
+        setError('Bu hesap devre dışı bırakılmış.');
       } else {
         setError('Giriş yapılamadı.');
       }
-      setLoading(false);
     }
+    setLoading(false);
   };
 
   return (
@@ -68,27 +96,6 @@ export default function LoginPage() {
 
       {/* Content */}
       <div style={{ position: 'relative', width: '100%', maxWidth: '448px' }}>
-        {/* Logo */}
-        <motion.div 
-          style={{ display: 'flex', justifyContent: 'center', marginBottom: '32px' }}
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
-        >
-          <div style={{
-            width: '80px',
-            height: '80px',
-            borderRadius: '16px',
-            background: 'linear-gradient(to bottom right, #0ea5e9, #0284c7)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 25px 50px -12px rgba(14, 165, 233, 0.2)'
-          }}>
-            <span style={{ fontSize: '40px' }}>🎯</span>
-          </div>
-        </motion.div>
-
         {/* Title */}
         <motion.div
           style={{ textAlign: 'center', marginBottom: '32px' }}
@@ -96,8 +103,10 @@ export default function LoginPage() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
         >
-          <h1 style={{ fontSize: '36px', fontWeight: 'bold', color: 'white', marginBottom: '8px' }}>Akınay Mentörlük</h1>
-          <p style={{ fontSize: '16px', color: '#9ca3af' }}>Mentörlük sürecinizi yönetin</p>
+          <h1 style={{ fontSize: '36px', fontWeight: 'bold', color: 'white', marginBottom: '8px' }}>MENT X</h1>
+          <p style={{ fontSize: '16px', color: '#9ca3af' }}>
+            {isRegister ? 'Hesap oluşturun' : 'Mentörlük sürecinizi yönetin'}
+          </p>
         </motion.div>
 
         {/* Form */}
@@ -121,6 +130,77 @@ export default function LoginPage() {
             }} role="alert">
               <AlertCircle style={{ width: '20px', height: '20px', color: '#f87171', flexShrink: 0 }} />
               <p style={{ color: '#f87171', fontSize: '14px' }}>{error}</p>
+            </div>
+          )}
+
+          {/* Success Alert */}
+          {success && (
+            <div style={{
+              backgroundColor: 'rgba(52, 211, 153, 0.1)',
+              border: '1px solid rgba(52, 211, 153, 0.2)',
+              borderRadius: '12px',
+              padding: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px'
+            }} role="alert">
+              <AlertCircle style={{ width: '20px', height: '20px', color: '#34d399', flexShrink: 0 }} />
+              <p style={{ color: '#34d399', fontSize: '14px' }}>{success}</p>
+            </div>
+          )}
+
+          {/* Name Field - Only for Register */}
+          {isRegister && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <label htmlFor="name" style={{ fontSize: '14px', fontWeight: 500, color: '#e5e7eb' }}>
+                Ad Soyad
+              </label>
+              <div style={{ position: 'relative' }}>
+                <div style={{
+                  position: 'absolute',
+                  left: '16px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  width: '20px',
+                  height: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  pointerEvents: 'none',
+                  zIndex: 10
+                }}>
+                  <User style={{ width: '20px', height: '20px', color: '#9ca3af' }} />
+                </div>
+                <input
+                  id="name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Adınız ve soyadınız"
+                  autoComplete="name"
+                  style={{
+                    width: '100%',
+                    height: '48px',
+                    backgroundColor: '#151c2c',
+                    border: '2px solid #1e293b',
+                    borderRadius: '12px',
+                    paddingLeft: '56px',
+                    paddingRight: '16px',
+                    fontSize: '16px',
+                    color: 'white',
+                    outline: 'none',
+                    transition: 'all 0.2s'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#0ea5e9';
+                    e.target.style.boxShadow = '0 0 0 3px rgba(14, 165, 233, 0.1)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#1e293b';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                />
+              </div>
             </div>
           )}
 
@@ -150,7 +230,7 @@ export default function LoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="E-posta adresinizi girin"
+                placeholder={isRegister ? "E-posta adresinizi girin" : "E-posta adresinizi girin"}
                 required
                 autoComplete="email"
                 style={{
@@ -206,7 +286,7 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Şifrenizi girin"
                 required
-                autoComplete="current-password"
+                autoComplete={isRegister ? "new-password" : "current-password"}
                 style={{
                   width: '100%',
                   height: '48px',
@@ -267,7 +347,7 @@ export default function LoginPage() {
             style={{
               width: '100%',
               height: '48px',
-              backgroundColor: loading ? '#0ea5e9' : '#0ea5e9',
+              backgroundColor: '#0ea5e9',
               color: 'white',
               fontWeight: 600,
               borderRadius: '12px',
@@ -278,7 +358,7 @@ export default function LoginPage() {
               alignItems: 'center',
               justifyContent: 'center',
               gap: '8px',
-              marginTop: '32px',
+              marginTop: '8px',
               transition: 'all 0.2s'
             }}
             onMouseEnter={(e) => {
@@ -298,13 +378,84 @@ export default function LoginPage() {
                   borderRadius: '50%',
                   animation: 'spin 1s linear infinite'
                 }} />
-                Giriş yapılıyor...
+                {isRegister ? 'Kayıt yapılıyor...' : 'Giriş yapılıyor...'}
               </>
             ) : (
-              'Giriş Yap'
+              <>
+                {isRegister ? (
+                  <>
+                    <UserPlus style={{ width: '20px', height: '20px' }} />
+                    Kayıt Ol
+                  </>
+                ) : (
+                  'Giriş Yap'
+                )}
+              </>
+            )}
+          </button>
+
+          {/* Toggle Login/Register */}
+          <button
+            type="button"
+            onClick={() => {
+              setIsRegister(!isRegister);
+              setError(null);
+              setSuccess(null);
+            }}
+            style={{
+              width: '100%',
+              height: '48px',
+              backgroundColor: 'transparent',
+              color: '#9ca3af',
+              fontWeight: 500,
+              borderRadius: '12px',
+              border: '1px solid #2d3a4f',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = '#0ea5e9';
+              e.currentTarget.style.color = '#38bdf8';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = '#2d3a4f';
+              e.currentTarget.style.color = '#9ca3af';
+            }}
+          >
+            {isRegister ? (
+              <>
+                Zaten hesabınız var? <span style={{ color: '#38bdf8' }}>Giriş yapın</span>
+              </>
+            ) : (
+              <>
+                Hesabınız yok mu? <span style={{ color: '#38bdf8' }}>Kayıt olun</span>
+              </>
             )}
           </button>
         </motion.form>
+
+        {/* Info Text for Register */}
+        {isRegister && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            style={{
+              marginTop: '16px',
+              padding: '16px',
+              backgroundColor: 'rgba(14, 165, 233, 0.1)',
+              borderRadius: '12px',
+              border: '1px solid rgba(14, 165, 233, 0.2)'
+            }}
+          >
+            <p style={{ color: '#9ca3af', fontSize: '14px', textAlign: 'center' }}>
+              Kayıt olduktan sonra admin onayı gerekecek. Onaylandığında giriş yapabilirsiniz.
+            </p>
+          </motion.div>
+        )}
 
         {/* Footer */}
         <div style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -312,7 +463,7 @@ export default function LoginPage() {
             Sadece yetkili kullanıcılar giriş yapabilir
           </p>
           <p style={{ textAlign: 'center', fontSize: '14px', color: '#4b5563' }}>
-            © 2026 Akınay Mentörlük
+            © 2026 MENT X
           </p>
         </div>
       </div>

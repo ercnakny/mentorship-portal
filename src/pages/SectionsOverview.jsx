@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   ArrowLeft, 
@@ -21,6 +22,15 @@ const iconMap = {
 };
 
 const SectionsOverview = ({ user, onNavigate }) => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   const completedSections = user.completedSections || [];
   
   const getSectionStatus = (sectionId, index) => {
@@ -32,7 +42,7 @@ const SectionsOverview = ({ user, onNavigate }) => {
   };
 
   // Styles
-  const pageStyle = { padding: '24px', maxWidth: '100%' };
+  const pageStyle = { padding: isMobile ? '16px' : '24px', maxWidth: '100%' };
   const cardStyle = {
     width: '100%',
     display: 'flex',
@@ -133,7 +143,7 @@ const SectionsOverview = ({ user, onNavigate }) => {
           <span>Geri Dön</span>
         </button>
         
-        <h1 style={{ fontSize: '32px', fontWeight: 'bold', color: 'white', marginBottom: '8px' }}>
+        <h1 style={{ fontSize: isMobile ? '24px' : '32px', fontWeight: 'bold', color: 'white', marginBottom: '8px' }}>
           Bölümler
         </h1>
         <p style={{ color: '#9ca3af', fontSize: '18px' }}>
@@ -145,10 +155,9 @@ const SectionsOverview = ({ user, onNavigate }) => {
       <motion.div 
         style={{ 
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
-          gap: '20px'
+          gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(350px, 1fr))',
+          gap: isMobile ? '12px' : '20px'
         }}
-        className="grid-cols-1 lg:grid-cols-2"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.1 }}

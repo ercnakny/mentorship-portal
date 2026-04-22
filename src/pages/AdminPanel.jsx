@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { addClientToFirestore } from '../firebase/client';
+import { useState, useEffect } from 'react';
+import { addClientToFirestore, getPendingUsers, approveUser, rejectUser } from '../firebase/client';
 import { motion } from 'framer-motion';
 import { 
   ArrowLeft,
@@ -121,6 +121,15 @@ const DEMO_CLIENTS = [
 ];
 
 const AdminPanel = ({ user, onNavigate }) => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   const [activeTab, setActiveTab] = useState('requests');
   const [expandedUser, setExpandedUser] = useState(null);
   const [clientFilter, setClientFilter] = useState('all');
@@ -149,6 +158,50 @@ const AdminPanel = ({ user, onNavigate }) => {
   const [requests, setRequests] = useState([
     { id: 1, userId: 'user1', userName: 'Ahmet Yılmaz', userEmail: 'ahmet@ornek.com', section: 'urun', type: 'completion', message: 'Ürün bölümünü tamamladım', status: 'pending', createdAt: '2026-04-21' },
   ]);
+
+  // Kayıt istekleri (Firebase'den)
+  const [registrationRequests, setRegistrationRequests] = useState([]);
+
+  // Kayıt isteklerini getir
+  useEffect(() => {
+    const loadPendingUsers = async () => {
+      const pending = await getPendingUsers();
+      setRegistrationRequests(pending);
+    };
+    if (activeTab === 'requests') {
+      loadPendingUsers();
+    }
+  }, [activeTab]);
+
+  // Kayıt isteğini onayla
+  const handleApproveRegistration = async (user) => {
+    const result = await approveUser(user.email, {
+      name: user.name,
+      industry: user.industry || '',
+      hasContentSupport: user.hasContentSupport ?? true,
+      startDate: user.startDate || new Date().toISOString().split('T')[0]
+    });
+    if (result.success) {
+      setRegistrationRequests(registrationRequests.filter(r => r.email !== user.email));
+      setRequests([...requests, {
+        id: Date.now(),
+        userId: user.email,
+        userName: user.name,
+        userEmail: user.email,
+        section: 'kayit',
+        type: 'registration',
+        message: 'Kayıt onaylandı',
+        status: 'approved',
+        createdAt: new Date().toISOString().split('T')[0]
+      }]);
+    }
+  };
+
+  // Kayıt isteğini reddet
+  const handleRejectRegistration = async (email) => {
+    await rejectUser(email);
+    setRegistrationRequests(registrationRequests.filter(r => r.email !== email));
+  };
 
   const clients = DEMO_CLIENTS;
 
@@ -215,8 +268,8 @@ const AdminPanel = ({ user, onNavigate }) => {
   const pendingCount = requests.filter(r => r.status === 'pending').length;
 
   // Styles
-  const pageStyle = { padding: '32px', maxWidth: '1400px', margin: '0 auto' };
-  const cardStyle = { backgroundColor: '#1a2234', borderRadius: '16px', border: '1px solid #2d3a4f', padding: '24px' };
+  const pageStyle = { padding: isMobile ? '16px' : '32px', maxWidth: '1400px', margin: '0 auto', paddingBottom: isMobile ? '100px' : '32px' };
+  const cardStyle = { backgroundColor: '#1a2234', borderRadius: '16px', border: '1px solid #2d3a4f', padding: isMobile ? '16px' : '24px' };
 
   const getTabStyle = (isActive) => ({
     display: 'flex',
@@ -235,7 +288,7 @@ const AdminPanel = ({ user, onNavigate }) => {
 
   const inputStyle = {
     width: '100%',
-    height: '48px',
+    height: isMobile ? '44px' : '48px',
     backgroundColor: '#151c2c',
     border: '2px solid #2d3a4f',
     borderRadius: '12px',
@@ -287,7 +340,47 @@ const AdminPanel = ({ user, onNavigate }) => {
       {/* Requests Tab */}
       {activeTab === 'requests' && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-          {requests.length === 0 ? (
+          
+          {/* Kayıt İstekleri */}
+          {registrationRequests.length > 0 && (
+            <div style={{ marginBottom: '24px' }}>
+              <h3 style={{ color: 'white', fontWeight: 600, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Users style={{ width: '20px', height: '20px', color: '#38bdf8' }} />
+                Yeni Kayıt Talepleri
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {registrationRequests.map((req) => (
+                  <div key={req.id} style={{ ...cardStyle, border: '1px solid rgba(14, 165, 233, 0.3)', backgroundColor: 'rgba(14, 165, 233, 0.05)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                          <span style={{ padding: '4px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: 500, backgroundColor: 'rgba(14, 165, 233, 0.2)', color: '#38bdf8' }}>
+                            Yeni Kayıt
+                          </span>
+                          <span style={{ color: '#6b7280', fontSize: '14px' }}>{req.createdAt?.split('T')[0]}</span>
+                        </div>
+                        <h3 style={{ color: 'white', fontWeight: 600, marginBottom: '4px' }}>{req.name}</h3>
+                        <p style={{ color: '#9ca3af', fontSize: '14px', marginBottom: '4px' }}>{req.email}</p>
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button onClick={() => handleApproveRegistration(req)} style={{ padding: '10px 16px', backgroundColor: 'rgba(52, 211, 153, 0.2)', color: '#34d399', borderRadius: '12px', border: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '6px' }} title="Onayla">
+                          <CheckCircle2 style={{ width: '16px', height: '16px' }} />
+                          Onayla
+                        </button>
+                        <button onClick={() => handleRejectRegistration(req.email)} style={{ padding: '10px 16px', backgroundColor: 'rgba(239, 68, 68, 0.2)', color: '#f87171', borderRadius: '12px', border: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '6px' }} title="Reddet">
+                          <XCircle style={{ width: '16px', height: '16px' }} />
+                          Reddet
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Mevcut Talepler */}
+          {requests.length === 0 && registrationRequests.length === 0 ? (
             <div style={{ ...cardStyle, textAlign: 'center', padding: '32px' }}>
               <p style={{ color: '#6b7280' }}>Henüz talep yok</p>
             </div>
@@ -337,7 +430,7 @@ const AdminPanel = ({ user, onNavigate }) => {
               Yeni Danışan Ekle
             </h3>
             
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '16px' }}>
               <div>
                 <label style={{ fontSize: '14px', fontWeight: 500, color: '#9ca3af', marginBottom: '8px', display: 'block' }}>Ad Soyad *</label>
                 <input type="text" value={newUser.name} onChange={(e) => setNewUser({...newUser, name: e.target.value})} placeholder="Örn: Mehmet Demir" style={inputStyle} />
@@ -352,6 +445,59 @@ const AdminPanel = ({ user, onNavigate }) => {
                   Sektör
                 </label>
                 <input type="text" value={newUser.industry} onChange={(e) => setNewUser({...newUser, industry: e.target.value})} placeholder="Örn: Psikoloji, Fitness" style={inputStyle} />
+              </div>
+              <div>
+                <label style={{ fontSize: '14px', fontWeight: 500, color: '#9ca3af', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <Calendar style={{ width: '16px', height: '16px' }} />
+                  Süreç Başlangıç Tarihi
+                </label>
+                <input 
+                  type="date" 
+                  value={newUser.startDate} 
+                  onChange={(e) => setNewUser({...newUser, startDate: e.target.value})} 
+                  style={{ ...inputStyle, colorScheme: 'dark' }} 
+                />
+              </div>
+              <div>
+                <label style={{ fontSize: '14px', fontWeight: 500, color: '#9ca3af', marginBottom: '8px', display: 'block' }}>İçerik Desteği</label>
+                <div style={{ display: 'flex', gap: '8px', height: '48px' }}>
+                  <button 
+                    type="button"
+                    onClick={() => setNewUser({...newUser, hasContentSupport: true})}
+                    style={{ 
+                      flex: 1, 
+                      height: '100%', 
+                      borderRadius: '12px', 
+                      border: newUser.hasContentSupport ? '2px solid #0ea5e9' : '2px solid #2d3a4f', 
+                      backgroundColor: newUser.hasContentSupport ? 'rgba(14, 165, 233, 0.2)' : '#151c2c', 
+                      color: newUser.hasContentSupport ? '#38bdf8' : '#6b7280', 
+                      fontSize: '14px', 
+                      fontWeight: 500, 
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    Destekli
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => setNewUser({...newUser, hasContentSupport: false})}
+                    style={{ 
+                      flex: 1, 
+                      height: '100%', 
+                      borderRadius: '12px', 
+                      border: !newUser.hasContentSupport ? '2px solid #0ea5e9' : '2px solid #2d3a4f', 
+                      backgroundColor: !newUser.hasContentSupport ? 'rgba(14, 165, 233, 0.2)' : '#151c2c', 
+                      color: !newUser.hasContentSupport ? '#38bdf8' : '#6b7280', 
+                      fontSize: '14px', 
+                      fontWeight: 500, 
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    Desteksiz
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -396,22 +542,22 @@ const AdminPanel = ({ user, onNavigate }) => {
       {activeTab === 'tracking' && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
           {/* Stats */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(150px, 1fr))', gap: isMobile ? '8px' : '16px', marginBottom: '24px' }}>
             <div style={cardStyle}>
-              <p style={{ color: '#9ca3af', fontSize: '14px', marginBottom: '4px' }}>Toplam Danışan</p>
-              <p style={{ fontSize: '32px', fontWeight: 'bold', color: 'white' }}>{clients.length}</p>
+              <p style={{ color: '#9ca3af', fontSize: isMobile ? '12px' : '14px', marginBottom: '4px' }}>Toplam</p>
+              <p style={{ fontSize: isMobile ? '24px' : '32px', fontWeight: 'bold', color: 'white' }}>{clients.length}</p>
             </div>
             <div style={cardStyle}>
-              <p style={{ color: '#9ca3af', fontSize: '14px', marginBottom: '4px' }}>Aktif</p>
-              <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#34d399' }}>{clients.filter(c => c.status === 'active').length}</p>
+              <p style={{ color: '#9ca3af', fontSize: isMobile ? '12px' : '14px', marginBottom: '4px' }}>Aktif</p>
+              <p style={{ fontSize: isMobile ? '24px' : '32px', fontWeight: 'bold', color: '#34d399' }}>{clients.filter(c => c.status === 'active').length}</p>
             </div>
             <div style={cardStyle}>
-              <p style={{ color: '#9ca3af', fontSize: '14px', marginBottom: '4px' }}>Takılan</p>
-              <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#f87171' }}>{stuckClients.length}</p>
+              <p style={{ color: '#9ca3af', fontSize: isMobile ? '12px' : '14px', marginBottom: '4px' }}>Takılan</p>
+              <p style={{ fontSize: isMobile ? '24px' : '32px', fontWeight: 'bold', color: '#f87171' }}>{stuckClients.length}</p>
             </div>
             <div style={cardStyle}>
-              <p style={{ color: '#9ca3af', fontSize: '14px', marginBottom: '4px' }}>Bekleyen</p>
-              <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#fbbf24' }}>{clients.filter(c => c.status === 'pending').length}</p>
+              <p style={{ color: '#9ca3af', fontSize: isMobile ? '12px' : '14px', marginBottom: '4px' }}>Bekleyen</p>
+              <p style={{ fontSize: isMobile ? '24px' : '32px', fontWeight: 'bold', color: '#fbbf24' }}>{clients.filter(c => c.status === 'pending').length}</p>
             </div>
           </div>
 

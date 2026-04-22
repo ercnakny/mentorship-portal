@@ -13,6 +13,14 @@ import { onAuthChange, getUserFromWhitelist, getUserProgress, getRedirectResultA
 function App() {
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   const [isAllowed, setIsAllowed] = useState(false);
   const [checking, setChecking] = useState(true);
   const [currentView, setCurrentView] = useState('dashboard');
@@ -128,11 +136,11 @@ function App() {
   }
 
   return (
-    <div className="flex min-h-screen bg-dark-500">
+    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#0a0f1a' }}>
       <Sidebar user={user} currentView={currentView} onNavigate={navigateTo} />
       
-      <main className="flex-1 md:ml-64 min-h-screen overflow-y-auto">
-        <div className="w-full" style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px', boxSizing: 'border-box' }}>
+      <main style={{ flex: 1, minHeight: '100vh', overflowY: 'auto', marginLeft: isMobile ? 0 : '256px', paddingBottom: isMobile ? '80px' : 0 }}>
+        <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto', padding: '24px', boxSizing: 'border-box' }}>
         <AnimatePresence mode="wait">
           {currentView === 'dashboard' && (
             <motion.div

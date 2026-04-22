@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   CheckCircle2, 
@@ -9,6 +10,15 @@ import {
 import { SECTIONS, getTotalDuration } from '../data/mentorshipSections';
 
 const Dashboard = ({ user, onNavigate }) => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   const startDate = new Date(user.startDate);
   const today = new Date();
   const daysPassed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
@@ -28,12 +38,12 @@ const Dashboard = ({ user, onNavigate }) => {
   const activeCount = 1;
 
   // Styles
-  const cardStyle = { backgroundColor: '#1a2234', borderRadius: '16px', border: '1px solid #2d3a4f', padding: '24px' };
-  const statCardStyle = { ...cardStyle, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '16px' };
-  const titleStyle = { fontSize: '32px', fontWeight: 'bold', color: 'white' };
-  const subtitleStyle = { color: '#9ca3af', fontSize: '18px' };
-  const statNumberStyle = { fontSize: '40px', fontWeight: 'bold', color: 'white' };
-  const statLabelStyle = { color: '#6b7280', fontSize: '14px' };
+  const cardStyle = { backgroundColor: '#1a2234', borderRadius: '16px', border: '1px solid #2d3a4f', padding: isMobile ? '16px' : '24px' };
+  const statCardStyle = { ...cardStyle, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: isMobile ? '8px' : '16px' };
+  const titleStyle = { fontSize: isMobile ? '24px' : '32px', fontWeight: 'bold', color: 'white' };
+  const subtitleStyle = { color: '#9ca3af', fontSize: isMobile ? '14px' : '18px' };
+  const statNumberStyle = { fontSize: isMobile ? '24px' : '40px', fontWeight: 'bold', color: 'white' };
+  const statLabelStyle = { color: '#6b7280', fontSize: isMobile ? '11px' : '14px' };
   const sectionTitleStyle = { fontSize: '20px', fontWeight: '600', color: 'white' };
 
   return (
@@ -59,11 +69,10 @@ const Dashboard = ({ user, onNavigate }) => {
       <motion.div 
         style={{ 
           display: 'grid', 
-          gridTemplateColumns: 'repeat(3, 1fr)', 
-          gap: '24px', 
+          gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(3, 1fr)', 
+          gap: isMobile ? '8px' : '24px', 
           marginBottom: '32px' 
         }}
-        className="grid-cols-1 md:grid-cols-3"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
@@ -90,8 +99,8 @@ const Dashboard = ({ user, onNavigate }) => {
         </div>
       </motion.div>
 
-      {/* Two Column Layout for Desktop */}
-      <div className="grid-cols-1 lg:grid-cols-2" style={{ display: 'grid', gap: '24px', marginBottom: '32px' }}>
+      {/* Two Column Layout */}
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: isMobile ? '16px' : '24px', marginBottom: '32px' }}>
         {/* Timeline Card */}
         <motion.div 
           style={{ ...cardStyle }}
@@ -109,7 +118,7 @@ const Dashboard = ({ user, onNavigate }) => {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '24px' }}>
             <div style={{ backgroundColor: 'rgba(21, 28, 44, 0.5)', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
               <p style={{ color: '#6b7280', fontSize: '14px', fontWeight: 500, marginBottom: '8px' }}>Başlangıç</p>
-              <p style={{ color: 'white', fontSize: '16px', fontWeight: 600 }}>
+              <p style={{ color: 'white', fontWeight: 'bold', fontSize: '24px' }}>
                 {startDate.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}
               </p>
             </div>

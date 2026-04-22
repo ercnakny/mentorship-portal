@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithRedirect, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, getRedirectResult } from 'firebase/auth';
-import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, getDocs, query, where } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, getDocs, query, where, deleteDoc } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBzik-WQRwG6yi7rWqhFrJGN2H4lMBH2Z8",
@@ -52,6 +52,101 @@ export const logOut = async () => {
     await signOut(auth);
   } catch (error) {
     console.error('Sign out error:', error);
+  }
+};
+
+// Kayıt ol - Firebase Auth + pendingUsers
+export const signUp = async (email, password, name) => {
+  try {
+    // 1. Firebase Auth'da kullanıcı oluştur
+    const result = await createUserWithEmailAndPassword(auth, email, password);
+    
+    // 2. pendingUsers collection'a ekle (onay bekliyor)
+    await setDoc(doc(db, 'pendingUsers', email.toLowerCase()), {
+      email: email.toLowerCase(),
+      name,
+      password, // Şifreyi de kaydet (sonra setPassword ile değiştirilecek)
+      status: 'pending',
+      createdAt: new Date().toISOString()
+    });
+    
+    // 3. Auth'dan çıkış yap (kullanıcı giriş yapamasın)
+    await signOut(auth);
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Sign up error:', error);
+    if (error.code === 'auth/email-already-in-use') {
+      return { success: false, error: 'Bu e-posta zaten kullanılıyor.' };
+    }
+    if (error.code === 'auth/weak-password') {
+      return { success: false, error: 'Şifre en az 6 karakter olmalıdır.' };
+    }
+    return { success: false, error: error.message };
+  }
+};
+
+// Admin: Kayıt isteğini onayla
+export const approveUser = async (email, userData) => {
+  try {
+    const now = new Date().toISOString();
+    
+    // 1. allowedUsers'a ekle
+    await setDoc(doc(db, 'allowedUsers', email.toLowerCase()), {
+      email: email.toLowerCase(),
+      name: userData.name,
+      role: 'user',
+      status: 'active',
+      industry: userData.industry || '',
+      hasContentSupport: userData.hasContentSupport ?? true,
+      startDate: userData.startDate || now.split('T')[0],
+      createdAt: now
+    }, { merge: true });
+    
+    // 2. users'a ekle (progres takibi için)
+    await setDoc(doc(db, 'users', email.toLowerCase()), {
+      name: userData.name,
+      email: email.toLowerCase(),
+      industry: userData.industry || '',
+      hasContentSupport: userData.hasContentSupport ?? true,
+      startDate: userData.startDate || now.split('T')[0],
+      completedSections: [],
+      completedSteps: {},
+      requestedSections: [],
+      createdAt: now,
+      updatedAt: now
+    }, { merge: true });
+    
+    // 3. pendingUsers'dan sil
+    await deleteDoc(doc(db, 'pendingUsers', email.toLowerCase()));
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Approve user error:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Admin: Kayıt isteğini reddet ve sil
+export const rejectUser = async (email) => {
+  try {
+    await deleteDoc(doc(db, 'pendingUsers', email.toLowerCase()));
+    return { success: true };
+  } catch (error) {
+    console.error('Reject user error:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Admin: Kayıt isteklerini getir
+export const getPendingUsers = async () => {
+  try {
+    const snapshot = await getDocs(collection(db, 'pendingUsers'));
+    const users = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return users.filter(u => u.status === 'pending');
+  } catch (error) {
+    console.error('Get pending users error:', error);
+    return [];
   }
 };
 
