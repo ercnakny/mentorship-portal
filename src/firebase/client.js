@@ -36,13 +36,13 @@ export const logOut = async () => {
   }
 };
 
-// Whitelist kontrolü - Firestore'dan kullanıcı bilgilerini al
+// Whitelist kontrolü - Firestore'dan kullanıcı bilgilerini al (case-insensitive)
 export const getUserFromWhitelist = async (email) => {
   try {
-    const q = query(collection(db, 'allowedUsers'), where('email', '==', email.toLowerCase()));
-    const snapshot = await getDocs(q);
-    if (snapshot.empty) return null;
-    return snapshot.docs[0].data();
+    const normalizedEmail = email.toLowerCase();
+    const snapshot = await getDocs(collection(db, 'allowedUsers'));
+    const found = snapshot.docs.find(doc => doc.data().email?.toLowerCase() === normalizedEmail);
+    return found ? found.data() : null;
   } catch (error) {
     console.error('Whitelist check error:', error);
     return null;
