@@ -1,14 +1,14 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
-import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
+import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, getDocs } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDemo_API_KEY_REPLACE_WITH_REAL",
-  authDomain: "akinay-ment-x.firebaseapp.com",
-  projectId: "akinay-ment-x",
-  storageBucket: "akinay-ment-x.appspot.com",
-  messagingSenderId: "REPLACE_WITH_REAL",
-  appId: "REPLACE_WITH_REAL"
+  apiKey: "AIzaSyBzik-WQRwG6yi7rWqhFrJGN2H4lMBH2Z8",
+  authDomain: "akinay-mentorluk-sistemi.firebaseapp.com",
+  projectId: "akinay-mentorluk-sistemi",
+  storageBucket: "akinay-mentorluk-sistemi.firebasestorage.app",
+  messagingSenderId: "714091944617",
+  appId: "1:714091944617:web:297042c60a8bd88fd327b8"
 };
 
 // Initialize Firebase
@@ -33,6 +33,18 @@ export const logOut = async () => {
     await signOut(auth);
   } catch (error) {
     console.error('Sign out error:', error);
+  }
+};
+
+// Whitelist kontrolü - sadece admin tarafından eklenenler girebilir
+export const checkUserWhitelist = async (email) => {
+  try {
+    const allowedSnap = await getDocs(collection(db, 'allowedUsers'));
+    const allowedEmails = allowedSnap.docs.map(doc => doc.data().email?.toLowerCase());
+    return allowedEmails.includes(email.toLowerCase());
+  } catch (error) {
+    console.error('Whitelist check error:', error);
+    return false;
   }
 };
 
@@ -61,6 +73,11 @@ export const getUserProgress = async (userId) => {
     console.error('Get progress error:', error);
     return null;
   }
+};
+
+// Auth state observer
+export const onAuthChange = (callback) => {
+  return onAuthStateChanged(auth, callback);
 };
 
 export default app;

@@ -1,14 +1,17 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, ChevronLeft, ChevronRight, CheckCircle2, Play, Plus, Video, Trash2, ExternalLink, FileText, Upload, X, Link2 } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, CheckCircle2, Play, Plus, Video, Trash2, ExternalLink, FileText, Upload, X, Link2, Loader2, Save, Check } from 'lucide-react';
+import { saveUserProgress } from '../firebase/client';
 
-const StepPage = ({ section, step, user, onNavigate }) => {
+const StepPage = ({ section, step, user, onNavigate, onUserUpdate }) => {
   const [isCompleted, setIsCompleted] = useState(
     user.completedSteps?.[section.id]?.includes(step.id) || false
   );
   const [videos, setVideos] = useState([{ id: 1, url: '', title: '' }]);
   const [links, setLinks] = useState([{ id: 1, url: '', title: '' }]);
   const [pdfs, setPdfs] = useState([{ id: 1, name: '', file: null }]);
+  const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
   
   const currentIndex = section.steps.findIndex(s => s.id === step.id);
   const hasPrev = currentIndex > 0;
@@ -18,8 +21,39 @@ const StepPage = ({ section, step, user, onNavigate }) => {
 
   const isAdmin = user.role === 'admin';
 
-  const handleComplete = () => {
-    setIsCompleted(true);
+  const handleComplete = async () => {
+    setSaving(true);
+    
+    try {
+      // Firestore'a kaydet
+      const updatedCompletedSteps = {
+        ...user.completedSteps,
+        [section.id]: [...(user.completedSteps?.[section.id] || []), step.id]
+      };
+      
+      await saveUserProgress(user.uid, {
+        completedSteps: updatedCompletedSteps
+      });
+      
+      // Yerel state güncelle
+      setIsCompleted(true);
+      setSaveSuccess(true);
+      
+      // Parent'a bildir
+      if (onUserUpdate) {
+        onUserUpdate({
+          ...user,
+          completedSteps: updatedCompletedSteps
+        });
+      }
+      
+      // Animasyon 2 saniye sonra bitsin
+      setTimeout(() => setSaveSuccess(false), 2000);
+    } catch (error) {
+      console.error('Progress save error:', error);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleNext = () => {
@@ -145,9 +179,25 @@ const StepPage = ({ section, step, user, onNavigate }) => {
           </button>
           
           <div className="flex items-center gap-4">
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl font-bold ${isCompleted ? 'bg-emerald-500/20 text-emerald-400' : 'bg-primary-500/20 text-primary-400'}`}>
-              {isCompleted ? <CheckCircle2 className="w-6 h-6" /> : currentIndex + 1}
-            </div>
+            <motion.div 
+              className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl font-bold ${isCompleted ? 'bg-emerald-500/20 text-emerald-400' : 'bg-primary-500/20 text-primary-400'}`}
+              animate={saveSuccess ? { scale: [1, 1.2, 1] } : {}}
+              transition={{ duration: 0.3 }}
+            >
+              {saveSuccess ? (
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring' }}
+                >
+                  <Check className="w-6 h-6 text-emerald-400" />
+                </motion.div>
+              ) : isCompleted ? (
+                <CheckCircle2 className="w-6 h-6" />
+              ) : (
+                currentIndex + 1
+              )}
+            </motion.div>
             <div>
               <p className="text-gray-400 text-sm">{section.title} • Adım {currentIndex + 1}/{section.steps.length}</p>
               <h1 className="text-2xl md:text-3xl font-bold text-white">{step.title}</h1>
@@ -297,6 +347,7 @@ const StepPage = ({ section, step, user, onNavigate }) => {
                   <Link2 className="w-5 h-5 text-primary-400" />
                   Link Ekle (Admin)
                 </h3>
+
                 <div className="space-y-3">
                   {links.map((link, idx) => (
                     <div key={link.id} className="bg-dark-100 rounded-xl p-4">
@@ -426,10 +477,38 @@ const StepPage = ({ section, step, user, onNavigate }) => {
 
           <div className="flex items-center gap-3">
             {!isCompleted && (
-              <button onClick={handleComplete} className="btn-primary text-sm py-3">
-                <CheckCircle2 className="w-4 h-4" />
-                Tamamla
-              </button>
+              <motion.button 
+                onClick={handleComplete} 
+                disabled={saving}
+                className={`flex items-center gap-2 px-5 py-3 rounded-xl transition-all duration-300 text-sm ${
+                  saving 
+                    ? 'bg-dark-300 text-gray-500 cursor-not-allowed' 
+                    : 'btn-primary'
+                }`}
+                whileHover={saving ? {} : { scale: 1.02 }}
+                whileTap={saving ? {} : { scale: 0.98 }}
+              >
+                {saving ? (
+                  <>
+                    <motion.div
+                      className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                    />
+                    Kaydediliyor...
+                  </>
+                ) : saveSuccess ? (
+                  <>
+                    <Check className="w-4 h-4" />
+                    Kaydedildi
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    Tamamla
+                  </>
+                )}
+              </motion.button>
             )}
             
             <button onClick={handleNext} className="btn-primary text-sm py-3">
