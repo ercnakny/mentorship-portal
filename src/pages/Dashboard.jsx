@@ -35,38 +35,37 @@ const Dashboard = ({ user, onNavigate }) => {
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="text-2xl md:text-4xl font-bold text-white mb-2">
+        <h1 className="text-2xl md:text-4xl font-bold text-white capitalize">
           {user.name.split(' ')[0]}'ın Mentörlük Sayfası
         </h1>
-        <p className="text-gray-400 text-sm md:text-base">Mentörlük sürecinizi yönetin</p>
       </motion.div>
 
       {/* Stats Cards - Responsive Grid */}
       <motion.div 
-        className="grid grid-cols-3 gap-2 md:gap-4 mb-6"
+        className="grid grid-cols-3 gap-3 md:gap-6 mb-6"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
       >
-        <div className="bg-dark-200 rounded-xl md:rounded-2xl p-3 md:p-5 border border-dark-100">
-          <div className="flex flex-col items-center text-center">
-            <CheckCircle2 className="w-5 h-5 md:w-7 md:h-7 text-emerald-400 mb-2" />
+        <div className="bg-dark-200 rounded-xl md:rounded-2xl p-4 md:p-6 border border-dark-100">
+          <div className="flex flex-col items-center text-center gap-3">
+            <CheckCircle2 className="w-6 h-6 md:w-8 md:h-8 text-emerald-400" />
             <p className="text-2xl md:text-3xl font-bold text-white">{completedCount}</p>
             <p className="text-gray-500 text-xs md:text-sm">Tamamlanan</p>
           </div>
         </div>
 
-        <div className="bg-dark-200 rounded-xl md:rounded-2xl p-3 md:p-5 border border-dark-100">
-          <div className="flex flex-col items-center text-center">
-            <Zap className="w-5 h-5 md:w-7 md:h-7 text-amber-400 mb-2" />
+        <div className="bg-dark-200 rounded-xl md:rounded-2xl p-4 md:p-6 border border-dark-100">
+          <div className="flex flex-col items-center text-center gap-3">
+            <Zap className="w-6 h-6 md:w-8 md:h-8 text-amber-400" />
             <p className="text-2xl md:text-3xl font-bold text-white">{activeCount}</p>
             <p className="text-gray-500 text-xs md:text-sm">Açık</p>
           </div>
         </div>
 
-        <div className="bg-dark-200 rounded-xl md:rounded-2xl p-3 md:p-5 border border-dark-100">
-          <div className="flex flex-col items-center text-center">
-            <Lock className="w-5 h-5 md:w-7 md:h-7 text-gray-400 mb-2" />
+        <div className="bg-dark-200 rounded-xl md:rounded-2xl p-4 md:p-6 border border-dark-100">
+          <div className="flex flex-col items-center text-center gap-3">
+            <Lock className="w-6 h-6 md:w-8 md:h-8 text-gray-400" />
             <p className="text-2xl md:text-3xl font-bold text-white">{lockedCount}</p>
             <p className="text-gray-500 text-xs md:text-sm">Kilitli</p>
           </div>
@@ -89,16 +88,16 @@ const Dashboard = ({ user, onNavigate }) => {
         {/* Date Stats - Grid */}
         <div className="grid grid-cols-3 gap-3 mb-4">
           <div className="bg-dark-300/50 rounded-xl p-3 text-center">
-            <p className="text-gray-500 text-xs mb-1">Başlangıç</p>
-            <p className="text-white font-medium text-sm">{startDate.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}</p>
+            <p className="text-gray-500 text-xs font-medium mb-1">Başlangıç</p>
+            <p className="text-white font-semibold text-sm">{startDate.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}</p>
           </div>
           <div className="bg-dark-300/50 rounded-xl p-3 text-center">
-            <p className="text-gray-500 text-xs mb-1">Geçen</p>
-            <p className="text-primary-400 font-bold text-xl">{daysPassed}</p>
+            <p className="text-gray-500 text-xs font-medium mb-1">Geçen</p>
+            <p className="text-primary-400 font-bold text-2xl">{daysPassed}</p>
           </div>
           <div className="bg-dark-300/50 rounded-xl p-3 text-center">
-            <p className="text-gray-500 text-xs mb-1">Kalan</p>
-            <p className="text-amber-400 font-bold text-xl">{daysRemaining}</p>
+            <p className="text-gray-500 text-xs font-medium mb-1">Kalan</p>
+            <p className="text-amber-400 font-bold text-2xl">{daysRemaining}</p>
           </div>
         </div>
 

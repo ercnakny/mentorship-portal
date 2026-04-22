@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithRedirect, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, getRedirectResult } from 'firebase/auth';
 import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, getDocs, query, where } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -20,11 +20,30 @@ const googleProvider = new GoogleAuthProvider();
 // Auth functions
 export const signInWithGoogle = async () => {
   try {
-    const result = await signInWithPopup(auth, googleProvider);
-    return result.user;
+    await signInWithRedirect(auth, googleProvider);
   } catch (error) {
     console.error('Google sign in error:', error);
     throw error;
+  }
+};
+
+export const signInWithEmail = async (email, password) => {
+  try {
+    const result = await signInWithEmailAndPassword(auth, email, password);
+    return result.user;
+  } catch (error) {
+    console.error('Email sign in error:', error);
+    throw error;
+  }
+};
+
+export const getRedirectResultAuth = async () => {
+  try {
+    const result = await getRedirectResult(auth);
+    return result?.user || null;
+  } catch (error) {
+    console.error('Get redirect result error:', error);
+    return null;
   }
 };
 
@@ -73,6 +92,45 @@ export const getUserProgress = async (userId) => {
   } catch (error) {
     console.error('Get progress error:', error);
     return null;
+  }
+};
+
+// Admin: Yeni danışan ekle (Firestore)
+export const addClientToFirestore = async (clientData) => {
+  try {
+    const { email, name, industry, hasContentSupport, startDate } = clientData;
+    const now = new Date().toISOString();
+
+    // 1. allowedUsers'a ekle (auth için whitelist)
+    const allowedUsersRef = collection(db, 'allowedUsers');
+    await setDoc(doc(allowedUsersRef), {
+      email: email.toLowerCase(),
+      name,
+      role: 'user',
+      status: 'active',
+      industry: industry || '',
+      hasContentSupport: hasContentSupport ?? true,
+      createdAt: now
+    });
+
+    // 2. users'a ekle (progres takibi için)
+    await setDoc(doc(db, 'users', email.toLowerCase()), {
+      name,
+      email: email.toLowerCase(),
+      industry: industry || '',
+      hasContentSupport: hasContentSupport ?? true,
+      startDate: startDate || now.split('T')[0],
+      completedSections: [],
+      completedSteps: {},
+      requestedSections: [],
+      createdAt: now,
+      updatedAt: now
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error('Add client error:', error);
+    return { success: false, error: error.message };
   }
 };
 

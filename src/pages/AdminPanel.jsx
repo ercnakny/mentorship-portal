@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { addClientToFirestore } from '../firebase/client';
 import { motion } from 'framer-motion';
 import { 
   ArrowLeft,
@@ -172,20 +173,32 @@ const AdminPanel = ({ user, onNavigate }) => {
     };
   };
 
-  const handleAddUser = () => {
+  const [addStatus, setAddStatus] = useState(null); // null | 'loading' | 'success' | 'error'
+
+  const handleAddUser = async () => {
     if (newUser.email && newUser.email.includes('@') && newUser.name) {
-      setAllowedEmails([...allowedEmails, { 
-        ...newUser,
-        role: 'user', 
-        status: 'pending' 
-      }]);
-      setNewUser({
-        email: '',
-        name: '',
-        industry: '',
-        hasContentSupport: true,
-        startDate: new Date().toISOString().split('T')[0]
-      });
+      setAddStatus('loading');
+      const result = await addClientToFirestore(newUser);
+      
+      if (result.success) {
+        setAllowedEmails([...allowedEmails, { 
+          ...newUser,
+          role: 'user', 
+          status: 'active' 
+        }]);
+        setNewUser({
+          email: '',
+          name: '',
+          industry: '',
+          hasContentSupport: true,
+          startDate: new Date().toISOString().split('T')[0]
+        });
+        setAddStatus('success');
+        setTimeout(() => setAddStatus(null), 3000);
+      } else {
+        setAddStatus('error');
+        setTimeout(() => setAddStatus(null), 4000);
+      }
     }
   };
 
@@ -215,29 +228,29 @@ const AdminPanel = ({ user, onNavigate }) => {
       </motion.div>
 
       {/* Tabs */}
-      <div className="flex flex-wrap gap-3 mb-6">
+      <div className="flex flex-wrap gap-3 mb-8">
         <button
           onClick={() => setActiveTab('requests')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${activeTab === 'requests' ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30' : 'bg-dark-200 text-gray-400 border border-dark-100 hover:border-primary-500/30'}`}
+          className={`flex items-center gap-3 px-5 py-3 rounded-xl text-sm font-medium transition-all ${activeTab === 'requests' ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30' : 'bg-dark-200 text-gray-400 border border-dark-100 hover:border-primary-500/30 hover:text-gray-200'}`}
         >
           <Clock className="w-4 h-4 flex-shrink-0" />
           <span>Talepler</span>
-          {pendingCount > 0 && <span className="bg-amber-500 text-white text-xs px-2 py-0.5 rounded-full flex-shrink-0">{pendingCount}</span>}
+          {pendingCount > 0 && <span className="bg-amber-500/20 text-amber-400 text-xs font-semibold px-2.5 py-0.5 rounded-lg flex-shrink-0">{pendingCount}</span>}
         </button>
         <button
           onClick={() => setActiveTab('users')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${activeTab === 'users' ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30' : 'bg-dark-200 text-gray-400 border border-dark-100 hover:border-primary-500/30'}`}
+          className={`flex items-center gap-3 px-5 py-3 rounded-xl text-sm font-medium transition-all ${activeTab === 'users' ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30' : 'bg-dark-200 text-gray-400 border border-dark-100 hover:border-primary-500/30 hover:text-gray-200'}`}
         >
           <Users className="w-4 h-4 flex-shrink-0" />
           <span>Danışanlar</span>
         </button>
         <button
           onClick={() => setActiveTab('tracking')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${activeTab === 'tracking' ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30' : 'bg-dark-200 text-gray-400 border border-dark-100 hover:border-primary-500/30'}`}
+          className={`flex items-center gap-3 px-5 py-3 rounded-xl text-sm font-medium transition-all ${activeTab === 'tracking' ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30' : 'bg-dark-200 text-gray-400 border border-dark-100 hover:border-primary-500/30 hover:text-gray-200'}`}
         >
           <TrendingUp className="w-4 h-4 flex-shrink-0" />
           <span>Süreç Takibi</span>
-          {stuckClients.length > 0 && <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full flex-shrink-0">{stuckClients.length}</span>}
+          {stuckClients.length > 0 && <span className="bg-red-500/20 text-red-400 text-xs font-semibold px-2.5 py-0.5 rounded-lg flex-shrink-0">{stuckClients.length}</span>}
         </button>
       </div>
 
@@ -334,9 +347,40 @@ const AdminPanel = ({ user, onNavigate }) => {
               </div>
             )}
 
-            <button onClick={handleAddUser} disabled={!newUser.email || !newUser.name} className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed">
-              <Plus className="w-4 h-4" />
-              Danışan Ekle
+            <button 
+              onClick={handleAddUser} 
+              disabled={!newUser.email || !newUser.name || addStatus === 'loading'} 
+              className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                addStatus === 'success' 
+                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
+                  : addStatus === 'error'
+                    ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                    : 'bg-primary-500 text-white hover:bg-primary-400'
+              }`}
+            >
+              {addStatus === 'loading' ? (
+                <>
+                  <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>
+                    <Clock className="w-4 h-4" />
+                  </motion.div>
+                  Ekleniyor...
+                </>
+              ) : addStatus === 'success' ? (
+                <>
+                  <CheckCircle2 className="w-4 h-4" />
+                  Eklendi!
+                </>
+              ) : addStatus === 'error' ? (
+                <>
+                  <AlertCircle className="w-4 h-4" />
+                  Hata oluştu
+                </>
+              ) : (
+                <>
+                  <Plus className="w-4 h-4" />
+                  Danışan Ekle
+                </>
+              )}
             </button>
           </div>
 

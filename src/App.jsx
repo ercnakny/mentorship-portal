@@ -8,7 +8,7 @@ import StepPage from './pages/StepPage';
 import LoginPage from './pages/LoginPage';
 import AdminPanel from './pages/AdminPanel';
 import Sidebar from './components/Sidebar';
-import { onAuthChange, getUserFromWhitelist, getUserProgress } from './firebase/client';
+import { onAuthChange, getUserFromWhitelist, getUserProgress, getRedirectResultAuth } from './firebase/client';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -19,46 +19,70 @@ function App() {
   const [selectedSection, setSelectedSection] = useState(null);
   const [selectedStep, setSelectedStep] = useState(null);
 
-  // Firebase auth state dinle
+  // Firebase auth state dinle - redirect sonrası da çalışır
   useEffect(() => {
-    const unsubscribe = onAuthChange(async (firebaseUser) => {
-      setAuthLoading(false);
-      
+    const processUser = async (firebaseUser) => {
       if (!firebaseUser) {
+        setAuthLoading(false);
         setUser(null);
         setIsAllowed(false);
         setChecking(false);
         return;
       }
 
-      // Firestore'dan whitelist kontrolü ve kullanıcı bilgilerini al
-      const whitelistUser = await getUserFromWhitelist(firebaseUser.email);
-      
-      if (!whitelistUser) {
+      try {
+        const whitelistUser = await getUserFromWhitelist(firebaseUser.email);
+        if (!whitelistUser) {
+          setAuthLoading(false);
+          setUser(null);
+          setIsAllowed(false);
+          setChecking(false);
+          return;
+        }
+
+        const progress = await getUserProgress(firebaseUser.uid);
+        const userData = {
+          uid: firebaseUser.uid,
+          name: firebaseUser.displayName,
+          email: firebaseUser.email,
+          photoURL: firebaseUser.photoURL,
+          role: whitelistUser.role || 'user',
+          startDate: progress?.startDate || whitelistUser.startDate || new Date().toISOString(),
+          completedSections: progress?.completedSections || [],
+          completedSteps: progress?.completedSteps || {},
+          requestedSections: progress?.requestedSections || []
+        };
+        
+        setAuthLoading(false);
+        setUser(userData);
+        setIsAllowed(true);
+        setChecking(false);
+      } catch (error) {
+        console.error('Auth process error:', error);
+        setAuthLoading(false);
         setUser(null);
         setIsAllowed(false);
         setChecking(false);
-        return;
       }
+    };
 
-      // Kullanıcı whitelist'te var, Firestore'dan progress'i al
-      const progress = await getUserProgress(firebaseUser.uid);
-      
-      const userData = {
-        uid: firebaseUser.uid,
-        name: firebaseUser.displayName,
-        email: firebaseUser.email,
-        photoURL: firebaseUser.photoURL,
-        role: whitelistUser.role || 'user', // Firestore'dan gelen role
-        startDate: progress?.startDate || whitelistUser.startDate || new Date().toISOString(),
-        completedSections: progress?.completedSections || [],
-        completedSteps: progress?.completedSteps || {},
-        requestedSections: progress?.requestedSections || []
-      };
-      
-      setUser(userData);
-      setIsAllowed(true);
-      setChecking(false);
+    // Önce redirect sonucunu kontrol et
+    getRedirectResultAuth().then(redirectUser => {
+      if (redirectUser) {
+        processUser(redirectUser);
+      }
+    });
+
+    // Sonra normal auth state dinle
+    const unsubscribe = onAuthChange(firebaseUser => {
+      if (firebaseUser) {
+        processUser(firebaseUser);
+      } else {
+        setAuthLoading(false);
+        setUser(null);
+        setIsAllowed(false);
+        setChecking(false);
+      }
     });
 
     return () => unsubscribe();

@@ -180,8 +180,10 @@ const StepPage = ({ section, step, user, onNavigate, onUserUpdate }) => {
           
           <div className="flex items-center gap-4">
             <motion.div 
-              className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl font-bold ${isCompleted ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/30' : 'bg-primary-500/20 text-primary-400'}`}
-              animate={saveSuccess ? { scale: [1, 1.2, 1] } : {}}
+              className={`w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold backdrop-blur-md border ${isCompleted 
+                ? 'bg-emerald-600/20 border-emerald-600/30 text-emerald-400 shadow-lg shadow-emerald-600/10' 
+                : 'bg-indigo-600/20 border-indigo-600/30 text-indigo-400 shadow-lg shadow-indigo-600/10'}`}
+              animate={saveSuccess ? { scale: [1, 1.15, 1] } : {}}
               transition={{ duration: 0.3 }}
             >
               {saveSuccess || isCompleted ? (
@@ -190,7 +192,7 @@ const StepPage = ({ section, step, user, onNavigate, onUserUpdate }) => {
                   animate={{ scale: 1, rotate: 0 }}
                   transition={{ type: 'spring', stiffness: 200 }}
                 >
-                  <Check className="w-6 h-6" />
+                  <Check className="w-7 h-7" />
                 </motion.div>
               ) : (
                 currentIndex + 1
@@ -438,19 +440,19 @@ const StepPage = ({ section, step, user, onNavigate, onUserUpdate }) => {
 
         {/* Progress */}
         <motion.div className="mb-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             {section.steps.map((s, i) => (
               <div 
                 key={s.id}
-                className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
+                className={`h-2 flex-1 rounded-full transition-all duration-500 ${
                   i <= currentIndex 
                     ? s.id === step.id && isCompleted
-                      ? 'bg-emerald-500'
+                      ? 'bg-emerald-600'
                       : s.id === step.id
-                        ? 'bg-primary-500'
+                        ? 'bg-indigo-600'
                         : user.completedSteps?.[section.id]?.includes(s.id)
-                          ? 'bg-emerald-500'
-                          : 'bg-primary-500/50'
+                          ? 'bg-emerald-600/70'
+                          : 'bg-indigo-500/40'
                     : 'bg-dark-300'
                 }`}
               />

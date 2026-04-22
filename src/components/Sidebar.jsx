@@ -7,6 +7,7 @@ import {
   Target,
   Shield
 } from 'lucide-react';
+import { logOut } from '../firebase/client';
 
 const Sidebar = ({ user, currentView, onNavigate }) => {
   const menuItems = [
@@ -89,7 +90,10 @@ const Sidebar = ({ user, currentView, onNavigate }) => {
               <p className="text-gray-500 text-xs truncate">{user.email}</p>
             </div>
           </div>
-          <button className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-gray-400 hover:text-white hover:bg-dark-100 transition-colors text-sm">
+          <button 
+            onClick={logOut}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-gray-400 hover:text-white hover:bg-dark-100 transition-colors text-sm"
+          >
             <LogOut className="w-4 h-4" />
             <span>Çıkış</span>
           </button>
