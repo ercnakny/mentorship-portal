@@ -13,6 +13,7 @@ const LoginPage = () => {
     
     try {
       await signInWithGoogle();
+      // Firebase onAuthStateChanged App.jsx'te dinliyor, burada sadece popup açılıyor
     } catch (err) {
       let errorMessage = 'Giriş yapılamadı. Lütfen tekrar deneyin.';
       
@@ -20,6 +21,8 @@ const LoginPage = () => {
         errorMessage = 'Giriş penceresi kapatıldı.';
       } else if (err.code === 'auth/network-request-failed') {
         errorMessage = 'Ağ bağlantısı hatası.';
+      } else if (err.code === 'auth/unauthorized-domain') {
+        errorMessage = 'Bu alan adı yetkilendirilmemiş. Firebase Console\'a ekleyin.';
       }
       
       setError(errorMessage);
@@ -35,21 +38,21 @@ const LoginPage = () => {
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary-600/5 rounded-full blur-3xl" />
       </div>
 
-      {/* Main Card */}
+      {/* Main Content - Fully centered, no box */}
       <motion.div 
         className="relative w-full max-w-sm"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        {/* Logo */}
+        {/* Logo - Centered at top */}
         <motion.div 
-          className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center shadow-2xl shadow-primary-500/20"
+          className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center shadow-2xl shadow-primary-500/20"
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
         >
-          <span className="text-3xl">🎯</span>
+          <span className="text-4xl">🎯</span>
         </motion.div>
 
         {/* Title */}
@@ -59,11 +62,11 @@ const LoginPage = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
-          <h1 className="text-3xl font-bold text-white mb-2">Akınay Mentörlük</h1>
+          <h1 className="text-4xl font-bold text-white mb-2">Akınay Mentörlük</h1>
           <p className="text-gray-400">Mentörlük sürecinizi yönetin</p>
         </motion.div>
 
-        {/* Login Button - Clean, centered, no box */}
+        {/* Login Section - NO BOX, just clean button */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -71,9 +74,9 @@ const LoginPage = () => {
         >
           {/* Loading */}
           {loading && (
-            <div className="flex flex-col items-center justify-center py-10">
+            <div className="flex flex-col items-center justify-center py-8">
               <motion.div
-                className="w-10 h-10 rounded-full border-3 border-white/10 border-t-white"
+                className="w-12 h-12 rounded-full border-4 border-white/10 border-t-white"
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
               />
@@ -93,11 +96,11 @@ const LoginPage = () => {
             </motion.div>
           )}
 
-          {/* Google Button - Full width, clean */}
+          {/* Google Button - No container, just clean button */}
           {!loading && (
             <button
               onClick={handleGoogleLogin}
-              className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-100 text-gray-800 font-semibold py-4 px-6 rounded-xl transition-all duration-200 shadow-lg"
+              className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-100 text-gray-800 font-semibold py-4 px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -109,7 +112,7 @@ const LoginPage = () => {
             </button>
           )}
 
-          {/* Info Text */}
+          {/* Info Text - Spaced below button */}
           <p className="text-center text-gray-500 text-xs mt-6">
             Sadece yetkili kullanıcılar giriş yapabilir
           </p>
