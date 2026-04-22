@@ -36,7 +36,7 @@ const Dashboard = ({ user, onNavigate }) => {
         animate={{ opacity: 1, y: 0 }}
       >
         <h1 className="text-2xl md:text-4xl font-bold text-white mb-2">
-          {user.name.split(' ')[0]}'in Mentorluk Sayfası
+          {user.name.split(' ')[0]}'ın Mentörlük Sayfası
         </h1>
         <p className="text-gray-400 text-sm md:text-base">Mentörlük sürecinizi yönetin</p>
       </motion.div>

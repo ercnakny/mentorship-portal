@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, getDocs } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, getDocs, query, where } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBzik-WQRwG6yi7rWqhFrJGN2H4lMBH2Z8",
@@ -36,15 +36,16 @@ export const logOut = async () => {
   }
 };
 
-// Whitelist kontrolü - sadece admin tarafından eklenenler girebilir
-export const checkUserWhitelist = async (email) => {
+// Whitelist kontrolü - Firestore'dan kullanıcı bilgilerini al
+export const getUserFromWhitelist = async (email) => {
   try {
-    const allowedSnap = await getDocs(collection(db, 'allowedUsers'));
-    const allowedEmails = allowedSnap.docs.map(doc => doc.data().email?.toLowerCase());
-    return allowedEmails.includes(email.toLowerCase());
+    const q = query(collection(db, 'allowedUsers'), where('email', '==', email.toLowerCase()));
+    const snapshot = await getDocs(q);
+    if (snapshot.empty) return null;
+    return snapshot.docs[0].data();
   } catch (error) {
     console.error('Whitelist check error:', error);
-    return false;
+    return null;
   }
 };
 

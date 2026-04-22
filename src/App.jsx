@@ -8,7 +8,7 @@ import StepPage from './pages/StepPage';
 import LoginPage from './pages/LoginPage';
 import AdminPanel from './pages/AdminPanel';
 import Sidebar from './components/Sidebar';
-import { onAuthChange, checkUserWhitelist, getUserProgress, saveUserProgress } from './firebase/client';
+import { onAuthChange, getUserFromWhitelist, getUserProgress } from './firebase/client';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -31,10 +31,10 @@ function App() {
         return;
       }
 
-      // Email whitelist kontrolü
-      const allowed = await checkUserWhitelist(firebaseUser.email);
+      // Firestore'dan whitelist kontrolü ve kullanıcı bilgilerini al
+      const whitelistUser = await getUserFromWhitelist(firebaseUser.email);
       
-      if (!allowed) {
+      if (!whitelistUser) {
         setUser(null);
         setIsAllowed(false);
         setChecking(false);
@@ -49,8 +49,8 @@ function App() {
         name: firebaseUser.displayName,
         email: firebaseUser.email,
         photoURL: firebaseUser.photoURL,
-        role: firebaseUser.email === 'akinay516@gmail.com' ? 'admin' : 'user',
-        startDate: progress?.startDate || new Date().toISOString(),
+        role: whitelistUser.role || 'user', // Firestore'dan gelen role
+        startDate: progress?.startDate || whitelistUser.startDate || new Date().toISOString(),
         completedSections: progress?.completedSections || [],
         completedSteps: progress?.completedSteps || {},
         requestedSections: progress?.requestedSections || []
