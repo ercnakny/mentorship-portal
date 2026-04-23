@@ -8,7 +8,7 @@ import StepPage from './pages/StepPage';
 import LoginPage from './pages/LoginPage';
 import AdminPanel from './pages/AdminPanel';
 import Sidebar from './components/Sidebar';
-import { onAuthChange, getUserFromWhitelist, getUserProgress, getRedirectResultAuth, logOut } from './firebase/client';
+import { onAuthChange, getUserFromWhitelist, getUserProgress, getRedirectResultAuth, logOut, addGoogleUserToPending } from './firebase/client';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -42,8 +42,9 @@ function App() {
       try {
         const whitelistUser = await getUserFromWhitelist(firebaseUser.email);
         if (!whitelistUser) {
-          // Kullanici Firebase Auth'da var ama allowedUsers'da yok (onay bekliyor)
-          // Firebase Auth'dan cikis yap ve hata göster
+          // Kullanici Firebase Auth'da var ama allowedUsers'da yok
+          // Onu pendingUsers'a ekle ve cikis yap
+          await addGoogleUserToPending(firebaseUser);
           await logOut();
           setAuthLoading(false);
           setUser(null);

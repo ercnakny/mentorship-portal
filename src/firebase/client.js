@@ -176,6 +176,35 @@ export const getUserFromWhitelist = async (email) => {
   }
 };
 
+// Google kullanıcısını pendingUsers'a ekle (yeni kullanıcı için)
+export const addGoogleUserToPending = async (googleUser) => {
+  try {
+    const normalizedEmail = googleUser.email.toLowerCase();
+    
+    // Zaten pendingUsers'da veya allowedUsers'da var mı kontrol et
+    const existingPending = await getDoc(doc(db, 'pendingUsers', normalizedEmail));
+    const existingAllowed = await getUserFromWhitelist(normalizedEmail);
+    
+    if (existingPending.exists() || existingAllowed) {
+      return { exists: true };
+    }
+    
+    // Yeni kullanıcıyı pendingUsers'a ekle
+    await setDoc(doc(db, 'pendingUsers', normalizedEmail), {
+      email: normalizedEmail,
+      name: googleUser.displayName || googleUser.email.split('@')[0],
+      status: 'pending',
+      loginMethod: 'google',
+      createdAt: new Date().toISOString()
+    });
+    
+    return { success: true, added: true };
+  } catch (error) {
+    console.error('Add Google user to pending error:', error);
+    return { error: error.message };
+  }
+};
+
 // Firestore functions
 export const saveUserProgress = async (userId, data) => {
   try {
