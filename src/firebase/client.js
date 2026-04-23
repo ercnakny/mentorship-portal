@@ -58,14 +58,15 @@ export const logOut = async () => {
 // Kayıt ol - Firebase Auth + pendingUsers
 export const signUp = async (email, password, name) => {
   try {
+    const normalizedEmail = email.toLowerCase();
+    
     // 1. Firebase Auth'da kullanıcı oluştur
-    const result = await createUserWithEmailAndPassword(auth, email, password);
+    const result = await createUserWithEmailAndPassword(auth, normalizedEmail, password);
     
     // 2. pendingUsers collection'a ekle (onay bekliyor)
-    await setDoc(doc(db, 'pendingUsers', email.toLowerCase()), {
-      email: email.toLowerCase(),
+    await setDoc(doc(db, 'pendingUsers', normalizedEmail), {
+      email: normalizedEmail,
       name,
-      password, // Şifreyi de kaydet (sonra setPassword ile değiştirilecek)
       status: 'pending',
       createdAt: new Date().toISOString()
     });
@@ -94,7 +95,7 @@ export const approveUser = async (email, userData) => {
     
     // 1. Firestore: allowedUsers'a ekle
     await setDoc(doc(db, 'allowedUsers', normalizedEmail), {
-      email: normalizedEmail,
+      email: normalizedEmail,  // Always lowercase
       name: userData.name,
       role: 'user',
       status: 'active',
@@ -107,7 +108,7 @@ export const approveUser = async (email, userData) => {
     // 2. Firestore: users'a ekle (progres takibi için)
     await setDoc(doc(db, 'users', normalizedEmail), {
       name: userData.name,
-      email: normalizedEmail,
+      email: normalizedEmail,  // Always lowercase
       industry: userData.industry || '',
       hasContentSupport: userData.hasContentSupport ?? true,
       startDate: userData.startDate || now.split('T')[0],
