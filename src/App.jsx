@@ -8,13 +8,17 @@ import StepPage from './pages/StepPage';
 import LoginPage from './pages/LoginPage';
 import AdminPanel from './pages/AdminPanel';
 import Sidebar from './components/Sidebar';
-import { onAuthChange, getUserFromWhitelist, getUserProgress, getRedirectResultAuth, logOut, addGoogleUserToPending } from './firebase/client';
+import { onAuthChange, getUserFromWhitelist, getUserProgress, getRedirectResultAuth, addGoogleUserToPending } from './firebase/client';
 
 function App() {
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [pendingApproval, setPendingApproval] = useState(false);
+  const [isAllowed, setIsAllowed] = useState(false);
+  const [currentView, setCurrentView] = useState('dashboard');
+  const [selectedSection, setSelectedSection] = useState(null);
+  const [selectedStep, setSelectedStep] = useState(null);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -22,85 +26,72 @@ function App() {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
-  const [isAllowed, setIsAllowed] = useState(false);
-  const [checking, setChecking] = useState(true);
-  const [currentView, setCurrentView] = useState('dashboard');
-  const [selectedSection, setSelectedSection] = useState(null);
-  const [selectedStep, setSelectedStep] = useState(null);
 
-  // Firebase auth state dinle - redirect sonrası da çalışır
+  // Firebase auth state - sadece tek bir kez çalışır
   useEffect(() => {
+    let isProcessed = false;
+
     const processUser = async (firebaseUser) => {
+      // Eğer zaten işlendiyse, tekrar çalışma
+      if (isProcessed) return;
+      isProcessed = true;
+
       if (!firebaseUser) {
         setAuthLoading(false);
         setUser(null);
         setIsAllowed(false);
-        setChecking(false);
         return;
       }
 
       try {
         const whitelistUser = await getUserFromWhitelist(firebaseUser.email);
+
         if (!whitelistUser) {
-          // Kullanici Firebase Auth'da var ama allowedUsers'da yok
-          // Onu pendingUsers'a ekle ve bekleyen sayfaya yonlendir
+          // Yeni kullanıcı - pendingUsers'a ekle
           await addGoogleUserToPending(firebaseUser);
-          setAuthLoading(false);
           setUser({
             uid: firebaseUser.uid,
             name: firebaseUser.displayName || 'Kullanici',
             email: firebaseUser.email,
             pending: true
           });
-          setIsAllowed(false);
           setPendingApproval(true);
-          setChecking(false);
-          return;
+          setIsAllowed(false);
+        } else {
+          // Mevcut kullanıcı
+          const progress = await getUserProgress(firebaseUser.uid);
+          setUser({
+            uid: firebaseUser.uid,
+            name: firebaseUser.displayName,
+            email: firebaseUser.email,
+            photoURL: firebaseUser.photoURL,
+            role: whitelistUser.role || 'user',
+            startDate: progress?.startDate || whitelistUser.startDate || new Date().toISOString(),
+            completedSections: progress?.completedSections || [],
+            completedSteps: progress?.completedSteps || {},
+            requestedSections: progress?.requestedSections || []
+          });
+          setIsAllowed(true);
         }
-
-        const progress = await getUserProgress(firebaseUser.uid);
-        const userData = {
-          uid: firebaseUser.uid,
-          name: firebaseUser.displayName,
-          email: firebaseUser.email,
-          photoURL: firebaseUser.photoURL,
-          role: whitelistUser.role || 'user',
-          startDate: progress?.startDate || whitelistUser.startDate || new Date().toISOString(),
-          completedSections: progress?.completedSections || [],
-          completedSteps: progress?.completedSteps || {},
-          requestedSections: progress?.requestedSections || []
-        };
-        
-        setAuthLoading(false);
-        setUser(userData);
-        setIsAllowed(true);
-        setChecking(false);
       } catch (error) {
         console.error('Auth process error:', error);
-        setAuthLoading(false);
         setUser(null);
         setIsAllowed(false);
-        setChecking(false);
       }
+
+      setAuthLoading(false);
     };
 
     // Önce redirect sonucunu kontrol et
     getRedirectResultAuth().then(redirectUser => {
-      if (redirectUser) {
-        processUser(redirectUser);
-      }
+      processUser(redirectUser);
+    }).catch(() => {
+      // Redirect hatası - normal auth'a geç
     });
 
     // Sonra normal auth state dinle
     const unsubscribe = onAuthChange(firebaseUser => {
-      if (firebaseUser) {
-        processUser(firebaseUser);
-      } else {
-        setAuthLoading(false);
-        setUser(null);
-        setIsAllowed(false);
-        setChecking(false);
-      }
+      processUser(firebaseUser);
     });
 
     return () => unsubscribe();
@@ -135,7 +126,7 @@ function App() {
   // Giriş yapılmamış veya whitelist'te yok
   if (!user || !isAllowed) {
     return (
-      <LoginPage 
+      <LoginPage
         pendingApproval={pendingApproval}
         onLogin={(userData) => {
           setUser(userData);
@@ -150,7 +141,7 @@ function App() {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#0a0f1a' }}>
       <Sidebar user={user} currentView={currentView} onNavigate={navigateTo} />
-      
+
       <main style={{ flex: 1, minHeight: '100vh', overflowY: 'auto', marginLeft: isMobile ? 0 : '256px', paddingBottom: isMobile ? '80px' : 0 }}>
         <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto', padding: '24px', boxSizing: 'border-box' }}>
         <AnimatePresence mode="wait">
