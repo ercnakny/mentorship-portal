@@ -86,14 +86,15 @@ export const signUp = async (email, password, name) => {
   }
 };
 
-// Admin: Kayıt isteğini onayla
+// Admin: Kayıt isteğini onayla - Sadece Firestore (Auth zaten var)
 export const approveUser = async (email, userData) => {
   try {
     const now = new Date().toISOString();
+    const normalizedEmail = email.toLowerCase();
     
-    // 1. allowedUsers'a ekle
-    await setDoc(doc(db, 'allowedUsers', email.toLowerCase()), {
-      email: email.toLowerCase(),
+    // 1. Firestore: allowedUsers'a ekle
+    await setDoc(doc(db, 'allowedUsers', normalizedEmail), {
+      email: normalizedEmail,
       name: userData.name,
       role: 'user',
       status: 'active',
@@ -103,10 +104,10 @@ export const approveUser = async (email, userData) => {
       createdAt: now
     }, { merge: true });
     
-    // 2. users'a ekle (progres takibi için)
-    await setDoc(doc(db, 'users', email.toLowerCase()), {
+    // 2. Firestore: users'a ekle (progres takibi için)
+    await setDoc(doc(db, 'users', normalizedEmail), {
       name: userData.name,
-      email: email.toLowerCase(),
+      email: normalizedEmail,
       industry: userData.industry || '',
       hasContentSupport: userData.hasContentSupport ?? true,
       startDate: userData.startDate || now.split('T')[0],
@@ -117,8 +118,8 @@ export const approveUser = async (email, userData) => {
       updatedAt: now
     }, { merge: true });
     
-    // 3. pendingUsers'dan sil
-    await deleteDoc(doc(db, 'pendingUsers', email.toLowerCase()));
+    // 3. Firestore: pendingUsers'dan sil
+    await deleteDoc(doc(db, 'pendingUsers', normalizedEmail));
     
     return { success: true };
   } catch (error) {
