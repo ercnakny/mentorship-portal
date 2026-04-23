@@ -43,11 +43,15 @@ function App() {
         const whitelistUser = await getUserFromWhitelist(firebaseUser.email);
         if (!whitelistUser) {
           // Kullanici Firebase Auth'da var ama allowedUsers'da yok
-          // Onu pendingUsers'a ekle ve cikis yap
+          // Onu pendingUsers'a ekle ve bekleyen sayfaya yonlendir
           await addGoogleUserToPending(firebaseUser);
-          await logOut();
           setAuthLoading(false);
-          setUser(null);
+          setUser({
+            uid: firebaseUser.uid,
+            name: firebaseUser.displayName || 'Kullanici',
+            email: firebaseUser.email,
+            pending: true
+          });
           setIsAllowed(false);
           setPendingApproval(true);
           setChecking(false);
