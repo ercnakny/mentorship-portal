@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { AlertCircle, Mail, Lock, Eye, EyeOff, User, Briefcase, UserPlus } from 'lucide-react';
 import { signInWithEmail, signUp } from '../firebase/client';
 
-export default function LoginPage() {
+export default function LoginPage({ pendingApproval = false }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -130,6 +130,22 @@ export default function LoginPage() {
             }} role="alert">
               <AlertCircle style={{ width: '20px', height: '20px', color: '#f87171', flexShrink: 0 }} />
               <p style={{ color: '#f87171', fontSize: '14px' }}>{error}</p>
+            </div>
+          )}
+
+          {/* Pending Approval Alert */}
+          {pendingApproval && (
+            <div style={{
+              backgroundColor: 'rgba(251, 191, 36, 0.1)',
+              border: '1px solid rgba(251, 191, 36, 0.2)',
+              borderRadius: '12px',
+              padding: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px'
+            }} role="alert">
+              <AlertCircle style={{ width: '20px', height: '20px', color: '#fbbf24', flexShrink: 0 }} />
+              <p style={{ color: '#fbbf24', fontSize: '14px' }}>Hesabınız henüz onaylanmamış. Lütfen admin onayını bekleyin.</p>
             </div>
           )}
 

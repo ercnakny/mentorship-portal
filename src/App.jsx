@@ -8,12 +8,13 @@ import StepPage from './pages/StepPage';
 import LoginPage from './pages/LoginPage';
 import AdminPanel from './pages/AdminPanel';
 import Sidebar from './components/Sidebar';
-import { onAuthChange, getUserFromWhitelist, getUserProgress, getRedirectResultAuth } from './firebase/client';
+import { onAuthChange, getUserFromWhitelist, getUserProgress, getRedirectResultAuth, logOut } from './firebase/client';
 
 function App() {
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const [pendingApproval, setPendingApproval] = useState(false);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -41,9 +42,13 @@ function App() {
       try {
         const whitelistUser = await getUserFromWhitelist(firebaseUser.email);
         if (!whitelistUser) {
+          // Kullanici Firebase Auth'da var ama allowedUsers'da yok (onay bekliyor)
+          // Firebase Auth'dan cikis yap ve hata göster
+          await logOut();
           setAuthLoading(false);
           setUser(null);
           setIsAllowed(false);
+          setPendingApproval(true);
           setChecking(false);
           return;
         }
@@ -126,9 +131,11 @@ function App() {
   if (!user || !isAllowed) {
     return (
       <LoginPage 
+        pendingApproval={pendingApproval}
         onLogin={(userData) => {
           setUser(userData);
           setIsAllowed(true);
+          setPendingApproval(false);
         }}
         onError={(err) => console.error('Login error:', err)}
       />
