@@ -151,6 +151,18 @@ export const getPendingUsers = async () => {
   }
 };
 
+// Admin: Tum onayli kullanicillari getir
+export const getAllAllowedUsers = async () => {
+  try {
+    const snapshot = await getDocs(collection(db, 'allowedUsers'));
+    const users = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return users.filter(u => u.role !== 'admin'); // Admin'i listeleme
+  } catch (error) {
+    console.error('Get all allowed users error:', error);
+    return [];
+  }
+};
+
 // Whitelist kontrolü - Firestore'dan kullanıcı bilgilerini al (case-insensitive)
 export const getUserFromWhitelist = async (email) => {
   try {

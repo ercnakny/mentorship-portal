@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { addClientToFirestore, getPendingUsers, approveUser, rejectUser } from '../firebase/client';
+import { addClientToFirestore, getPendingUsers, approveUser, rejectUser, getAllAllowedUsers } from '../firebase/client';
 import { motion } from 'framer-motion';
 import { 
   ArrowLeft,
@@ -161,6 +161,9 @@ const AdminPanel = ({ user, onNavigate }) => {
 
   // Kayıt istekleri (Firebase'den)
   const [registrationRequests, setRegistrationRequests] = useState([]);
+  
+  // Gercek danisanlar (Firestore'dan)
+  const [realClients, setRealClients] = useState([]);
 
   // Kayıt isteklerini getir
   useEffect(() => {
@@ -170,6 +173,17 @@ const AdminPanel = ({ user, onNavigate }) => {
     };
     if (activeTab === 'requests') {
       loadPendingUsers();
+    }
+  }, [activeTab]);
+
+  // Gercek danisanlari Firestore'dan getir
+  useEffect(() => {
+    const loadRealClients = async () => {
+      const clients = await getAllAllowedUsers();
+      setRealClients(clients);
+    };
+    if (activeTab === 'users' || activeTab === 'tracking') {
+      loadRealClients();
     }
   }, [activeTab]);
 
@@ -183,17 +197,9 @@ const AdminPanel = ({ user, onNavigate }) => {
     });
     if (result.success) {
       setRegistrationRequests(registrationRequests.filter(r => r.email !== user.email));
-      setRequests([...requests, {
-        id: Date.now(),
-        userId: user.email,
-        userName: user.name,
-        userEmail: user.email,
-        section: 'kayit',
-        type: 'registration',
-        message: 'Kayıt onaylandı',
-        status: 'approved',
-        createdAt: new Date().toISOString().split('T')[0]
-      }]);
+      // Danisan listesini yenile
+      const clients = await getAllAllowedUsers();
+      setRealClients(clients);
     }
   };
 
@@ -203,7 +209,22 @@ const AdminPanel = ({ user, onNavigate }) => {
     setRegistrationRequests(registrationRequests.filter(r => r.email !== email));
   };
 
-  const clients = DEMO_CLIENTS;
+  // Firestore'dan gelen gercek danisanlar + demo (yoksa)
+  const clients = realClients.length > 0 ? realClients.map(c => ({
+    id: c.id || c.email,
+    name: c.name || 'İsimsiz',
+    email: c.email,
+    industry: c.industry || '',
+    startDate: c.startDate || new Date().toISOString().split('T')[0],
+    hasContentSupport: c.hasContentSupport ?? false,
+    status: c.status === 'active' ? 'active' : 'pending',
+    currentSection: 'teknik',
+    currentStep: 1,
+    totalSteps: 6,
+    completedSteps: [],
+    lastActivity: null,
+    stuckDays: 0
+  })) : [];
 
   const filteredClients = clients.filter(c => {
     if (clientFilter === 'active') return c.status === 'active';
@@ -232,11 +253,10 @@ const AdminPanel = ({ user, onNavigate }) => {
       const result = await addClientToFirestore(newUser);
       
       if (result.success) {
-        setAllowedEmails([...allowedEmails, { 
-          ...newUser,
-          role: 'user', 
-          status: 'active' 
-        }]);
+        // Listeyi yenile
+        const clients = await getAllAllowedUsers();
+        setRealClients(clients);
+        
         setNewUser({
           email: '',
           name: '',
