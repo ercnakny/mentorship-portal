@@ -29,7 +29,8 @@ export const signInWithGoogle = async () => {
 
 export const signInWithEmail = async (email, password) => {
   try {
-    const result = await signInWithEmailAndPassword(auth, email, password);
+    const normalizedEmail = email.toLowerCase();
+    const result = await signInWithEmailAndPassword(auth, normalizedEmail, password);
     return result.user;
   } catch (error) {
     console.error('Email sign in error:', error);
