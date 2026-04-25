@@ -15,16 +15,13 @@ export const SECTIONS = [
         title: 'Hesap Oluşturma',
         description: 'Lightfunnels ve GoDaddy hesaplarınızı oluşturun',
         content: `
-          <h3>Yapılacaklar:</h3>
-          <ul>
-            <li><a href="https://app.lightfunnels.com" target="_blank" style="color: #38bdf8;">Lightfunnels hesabı oluşturun →</a></li>
-            <li><a href="https://www.godaddy.com" target="_blank" style="color: #38bdf8;">GoDaddy hesabı oluşturun →</a></li>
-            <li>Alan adınızı belirleyin</li>
-          </ul>
-          <h3>Kaynaklar:</h3>
-          <ul>
-            <li><a href="https://www.notion.so/SAYFA-TEKN-K-12a7d57b8aef810aa161d0d71047dc92" target="_blank" style="color: #38bdf8;">Teknik Sayfa Detayları →</a></li>
-          </ul>
+Yapılacaklar:
+- Lightfunnels hesabı oluşturun: https://app.lightfunnels.com
+- GoDaddy hesabı oluşturun: https://www.godaddy.com
+- Alan adınızı belirleyin
+
+Kaynaklar:
+- Teknik Sayfa Detayları: https://www.notion.so/SAYFA-TEKN-K-12a7d57b8aef810aa161d0d71047dc92
         `
       },
       {
@@ -91,12 +88,10 @@ export const SECTIONS = [
         title: 'Ürün Fikri Belirleme',
         description: 'Danışanınızın ürün fikrini belirleyin',
         content: `
-          <h3>Kaynaklar:</h3>
-          <ul>
-            <li><a href="https://www.notion.so/D-J-TAL-R-N-REHBER-2b37d57b8aef80029570d968c73d9cb1" target="_blank" style="color: #38bdf8;">Dijital Ürün Rehberi →</a></li>
-            <li><a href="https://www.notion.so/r-n-Sorular-v1-2ac7d57b8aef80b2897eff94ff33ee7b" target="_blank" style="color: #38bdf8;">Ürün Soruları v1 →</a></li>
-            <li><a href="https://www.notion.so/AKINAY-MENT-D-J-TAL-R-N-FORM-2ac7d57b8aef809bb17ac200928f0d11" target="_blank" style="color: #38bdf8;">Dijital Ürün Form →</a></li>
-          </ul>
+Kaynaklar:
+- Dijital Ürün Rehberi: https://www.notion.so/D-J-TAL-R-N-REHBER-2b37d57b8aef80029570d968c73d9cb1
+- Ürün Soruları v1: https://www.notion.so/r-n-Sorular-v1-2ac7d57b8aef80b2897eff94ff33ee7b
+- Dijital Ürün Form: https://www.notion.so/AKINAY-MENT-D-J-TAL-R-N-FORM-2ac7d57b8aef809bb17ac200928f0d11
         `
       },
       {
@@ -104,11 +99,9 @@ export const SECTIONS = [
         title: 'Prompt Oluşturma',
         description: 'AI için prompt hazırlayın',
         content: `
-          <h3>Kaynaklar:</h3>
-          <ul>
-            <li><a href="https://www.notion.so/PROMPT-ER-K-HAZAL-G-RS-N-D-YE-2757d57b8aef8002bd53f7063a4f9ccd" target="_blank" style="color: #38bdf8;">Prompt (İçerik) →</a></li>
-            <li><a href="https://www.notion.so/erik-Bulman-in-80-Do-ruluk-GPT-Promptu-S-n-rs-z-erik-ret-2647d57b8aef808f9de1e23be6a2b153" target="_blank" style="color: #38bdf8;">İçerik Bulmanın 80 Doğruluk GPT Prompt'u →</a></li>
-          </ul>
+Kaynaklar:
+- Prompt (İçerik): https://www.notion.so/PROMPT-ER-K-HAZAL-G-RS-N-D-YE-2757d57b8aef8002bd53f7063a4f9ccd
+- İçerik Bulmanın 80% Doğruluk GPT Prompt'u: https://www.notion.so/erik-Bulman-in-80-Do-ruluk-GPT-Promptu-S-n-rs-z-erik-ret-2647d57b8aef808f9de1e23be6a2b153
         `
       },
       {
@@ -138,12 +131,10 @@ export const SECTIONS = [
         title: 'Hesap Analizi',
         description: 'Rakip hesapları analiz edin',
         content: `
-          <h3>Kaynaklar:</h3>
-          <ul>
-            <li><a href="https://www.notion.so/erik-Havuzu-1e87d57b8aef800fa0ccc494b195ffc5" target="_blank" style="color: #38bdf8;">İçerik Havuzu →</a></li>
-            <li><a href="https://www.notion.so/V-RAL-ER-K-S-STEM-1f77d57b8aef80b188ade02e6ab2a8bb" target="_blank" style="color: #38bdf8;">Viral İçerik Sistemi →</a></li>
-            <li><a href="https://www.notion.so/50x-Haz-r-Viral-erik-ablonlar-Ger-ek-rnekler-Sadece-Bak-ve-Yap-2677d57b8aef81dea289d72ec61f2dc4" target="_blank" style="color: #38bdf8;">50x Hazır Viral İçerik Şablonları →</a></li>
-          </ul>
+Kaynaklar:
+- İçerik Havuzu: https://www.notion.so/erik-Havuzu-1e87d57b8aef800fa0ccc494b195ffc5
+- Viral İçerik Sistemi: https://www.notion.so/V-RAL-ER-K-S-STEM-1f77d57b8aef80b188ade02e6ab2a8bb
+- 50x Hazır Viral İçerik Şablonları: https://www.notion.so/50x-Haz-r-Viral-erik-ablonlar-Ger-ek-rnekler-Sadece-Bak-ve-Yap-2677d57b8aef81dea289d72ec61f2dc4
         `
       },
       {
@@ -163,11 +154,9 @@ export const SECTIONS = [
         title: 'İçerik Üretimi',
         description: 'Videolarınızı çekin',
         content: `
-          <h3>Kaynaklar:</h3>
-          <ul>
-            <li><a href="https://www.notion.so/ECOM-ER-K-1f77d57b8aef8060bf2ed5278f24befb" target="_blank" style="color: #38bdf8;">Ecom İçerik →</a></li>
-            <li><a href="https://www.notion.so/Reklam-ve-erikler-22e7d57b8aef80f3a5c9c2698d7b4f09" target="_blank" style="color: #38bdf8;">Reklam ve İçerikler →</a></li>
-          </ul>
+Kaynaklar:
+- Ecom İçerik: https://www.notion.so/ECOM-ER-K-1f77d57b8aef8060bf2ed5278f24befb
+- Reklam ve İçerikler: https://www.notion.so/Reklam-ve-erikler-22e7d57b8aef80f3a5c9c2698d7b4f09
         `
       }
     ]

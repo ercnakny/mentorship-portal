@@ -132,8 +132,15 @@ const StepPage = ({ section, step, user, onNavigate, onUserUpdate }) => {
   // Parse content to make links clickable
   const renderContent = (content) => {
     if (!content) return null;
+    // First, strip any existing HTML tags that are raw text
+    let cleanContent = content
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&amp;/g, '&');
+    
     const urlRegex = /(https?:\/\/[^\s<]+)/g;
-    return content.split(urlRegex).map((part, i) => {
+    return cleanContent.split(urlRegex).map((part, i) => {
       if (i % 2 === 1) {
         return `<a href="${part}" target="_blank" rel="noopener noreferrer" style="color: #38bdf8; text-decoration: underline; text-decoration-color: rgba(56, 189, 248, 0.5);">${part}</a>`;
       }
