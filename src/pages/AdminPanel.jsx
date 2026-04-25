@@ -195,9 +195,11 @@ const AdminPanel = ({ user, onNavigate }) => {
     });
     if (result.success) {
       setRegistrationRequests(registrationRequests.filter(r => r.email !== user.email));
-      // Danisan listesini yenile
+      // Danisan listesini yenile - TÜM TABLAR
       const clients = await getAllAllowedUsers();
       setRealClients(clients);
+      // Users tablosunu da yenile
+      setActiveTab('users');
     }
   };
 
@@ -219,9 +221,9 @@ const AdminPanel = ({ user, onNavigate }) => {
     currentSection: 'teknik',
     currentStep: 1,
     totalSteps: 6,
-    completedSteps: [],
-    lastActivity: null,
-    stuckDays: 0
+    completedSteps: c.completedSteps || [],
+    lastActivity: c.lastActivity || null,
+    stuckDays: c.stuckDays || 0
   }));
 
   const filteredClients = clients.filter(c => {
@@ -264,6 +266,10 @@ const AdminPanel = ({ user, onNavigate }) => {
         });
         setAddStatus('success');
         setTimeout(() => setAddStatus(null), 3000);
+        
+        // Users tablosuna da ekle
+        const updatedClients = await getAllAllowedUsers();
+        setRealClients(updatedClients);
       } else {
         setAddStatus('error');
         setTimeout(() => setAddStatus(null), 4000);
