@@ -50,7 +50,8 @@ function App() {
         }
 
         // Mevcut kullanıcı
-        const progress = await getUserProgress(firebaseUser.uid);
+        const normalizedEmail = firebaseUser.email.toLowerCase().trim();
+        const progress = await getUserProgress(normalizedEmail);
         setUser({
           uid: firebaseUser.uid,
           name: firebaseUser.displayName || whitelistUser.name || 'Kullanıcı',
