@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithRedirect, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, getRedirectResult } from 'firebase/auth';
-import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, getDocs, query, where, deleteDoc } from 'firebase/firestore';
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
+import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBzik-WQRwG6yi7rWqhFrJGN2H4lMBH2Z8",
@@ -11,40 +11,19 @@ const firebaseConfig = {
   appId: "1:714091944617:web:297042c60a8bd88fd327b8"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-const googleProvider = new GoogleAuthProvider();
 
-// Auth functions
-export const signInWithGoogle = async () => {
-  try {
-    await signInWithRedirect(auth, googleProvider);
-  } catch (error) {
-    console.error('Google sign in error:', error);
-    throw error;
-  }
-};
-
+// Giriş yap
 export const signInWithEmail = async (email, password) => {
   try {
-    const normalizedEmail = email.toLowerCase();
+    const normalizedEmail = email.toLowerCase().trim();
     const result = await signInWithEmailAndPassword(auth, normalizedEmail, password);
     return result.user;
   } catch (error) {
     console.error('Email sign in error:', error);
     throw error;
-  }
-};
-
-export const getRedirectResultAuth = async () => {
-  try {
-    const result = await getRedirectResult(auth);
-    return result?.user || null;
-  } catch (error) {
-    console.error('Get redirect result error:', error);
-    return null;
   }
 };
 
@@ -56,23 +35,23 @@ export const logOut = async () => {
   }
 };
 
-// Kayıt ol - Firebase Auth + pendingUsers
+// Kayıt ol
 export const signUp = async (email, password, name) => {
   try {
-    const normalizedEmail = email.toLowerCase();
+    const normalizedEmail = email.toLowerCase().trim();
     
     // 1. Firebase Auth'da kullanıcı oluştur
     const result = await createUserWithEmailAndPassword(auth, normalizedEmail, password);
     
-    // 2. pendingUsers collection'a ekle (onay bekliyor)
+    // 2. pendingUsers collection'a ekle
     await setDoc(doc(db, 'pendingUsers', normalizedEmail), {
       email: normalizedEmail,
-      name,
+      name: name || 'İsimsiz',
       status: 'pending',
       createdAt: new Date().toISOString()
     });
     
-    // 3. Auth'dan çıkış yap (kullanıcı giriş yapamasın)
+    // 3. Auth'dan çıkış yap
     await signOut(auth);
     
     return { success: true };
@@ -88,28 +67,28 @@ export const signUp = async (email, password, name) => {
   }
 };
 
-// Admin: Kayıt isteğini onayla - Sadece Firestore (Auth zaten var)
+// Admin: Kayıt isteğini onayla
 export const approveUser = async (email, userData) => {
   try {
     const now = new Date().toISOString();
-    const normalizedEmail = email.toLowerCase();
+    const normalizedEmail = email.toLowerCase().trim();
     
-    // 1. Firestore: allowedUsers'a ekle
+    // 1. allowedUsers'a ekle
     await setDoc(doc(db, 'allowedUsers', normalizedEmail), {
-      email: normalizedEmail,  // Always lowercase
-      name: userData.name,
+      email: normalizedEmail,
+      name: userData.name || 'İsimsiz',
       role: 'user',
       status: 'active',
       industry: userData.industry || '',
       hasContentSupport: userData.hasContentSupport ?? true,
       startDate: userData.startDate || now.split('T')[0],
       createdAt: now
-    }, { merge: true });
+    });
     
-    // 2. Firestore: users'a ekle (progres takibi için)
+    // 2. users'a ekle (progres takibi için)
     await setDoc(doc(db, 'users', normalizedEmail), {
-      name: userData.name,
-      email: normalizedEmail,  // Always lowercase
+      name: userData.name || 'İsimsiz',
+      email: normalizedEmail,
       industry: userData.industry || '',
       hasContentSupport: userData.hasContentSupport ?? true,
       startDate: userData.startDate || now.split('T')[0],
@@ -118,9 +97,9 @@ export const approveUser = async (email, userData) => {
       requestedSections: [],
       createdAt: now,
       updatedAt: now
-    }, { merge: true });
+    });
     
-    // 3. Firestore: pendingUsers'dan sil
+    // 3. pendingUsers'dan sil
     await deleteDoc(doc(db, 'pendingUsers', normalizedEmail));
     
     return { success: true };
@@ -130,10 +109,10 @@ export const approveUser = async (email, userData) => {
   }
 };
 
-// Admin: Kayıt isteğini reddet ve sil
+// Admin: Kayıt isteğini reddet
 export const rejectUser = async (email) => {
   try {
-    await deleteDoc(doc(db, 'pendingUsers', email.toLowerCase()));
+    await deleteDoc(doc(db, 'pendingUsers', email.toLowerCase().trim()));
     return { success: true };
   } catch (error) {
     console.error('Reject user error:', error);
@@ -145,65 +124,35 @@ export const rejectUser = async (email) => {
 export const getPendingUsers = async () => {
   try {
     const snapshot = await getDocs(collection(db, 'pendingUsers'));
-    const users = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    return users.filter(u => u.status === 'pending');
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   } catch (error) {
     console.error('Get pending users error:', error);
     return [];
   }
 };
 
-// Admin: Tum onayli kullanicillari getir
+// Admin: Tüm onaylı kullanıcıları getir
 export const getAllAllowedUsers = async () => {
   try {
     const snapshot = await getDocs(collection(db, 'allowedUsers'));
     const users = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    return users.filter(u => u.role !== 'admin'); // Admin'i listeleme
+    return users.filter(u => u.role !== 'admin');
   } catch (error) {
     console.error('Get all allowed users error:', error);
     return [];
   }
 };
 
-// Whitelist kontrolü - Firestore'dan kullanıcı bilgilerini al (case-insensitive)
+// Whitelist kontrolü
 export const getUserFromWhitelist = async (email) => {
   try {
-    const normalizedEmail = email.toLowerCase();
-    const snapshot = await getDocs(collection(db, 'allowedUsers'));
-    const found = snapshot.docs.find(doc => doc.data().email?.toLowerCase() === normalizedEmail);
-    return found ? found.data() : null;
+    const normalizedEmail = email.toLowerCase().trim();
+    const docRef = doc(db, 'allowedUsers', normalizedEmail);
+    const docSnap = await getDoc(docRef);
+    return docSnap.exists() ? docSnap.data() : null;
   } catch (error) {
     console.error('Whitelist check error:', error);
     return null;
-  }
-};
-
-// Google kullanıcısını pendingUsers'a ekle (yeni kullanıcı için)
-export const addGoogleUserToPending = async (googleUser) => {
-  try {
-    const normalizedEmail = googleUser.email.toLowerCase();
-    
-    // Zaten pendingUsers'da veya allowedUsers'da var mı kontrol et
-    const existingPending = await getDoc(doc(db, 'pendingUsers', normalizedEmail));
-    const existingAllowed = await getUserFromWhitelist(normalizedEmail);
-    
-    if (existingPending.exists() || existingAllowed) {
-      return { exists: true };
-    }
-    
-    // Yeni kullanıcıyı pendingUsers'a ekle
-    await setDoc(doc(db, 'pendingUsers', normalizedEmail), {
-      email: normalizedEmail,
-      name: googleUser.displayName || googleUser.email.split('@')[0],
-      status: 'pending',
-      loginMethod: 'google',
-      createdAt: new Date().toISOString()
-    });
-    
-    return { success: true, added: true };
-  } catch (error) {
-    console.error('Add Google user to pending error:', error);
-    return { error: error.message };
   }
 };
 
@@ -224,26 +173,22 @@ export const saveUserProgress = async (userId, data) => {
 export const getUserProgress = async (userId) => {
   try {
     const docSnap = await getDoc(doc(db, 'users', userId));
-    if (docSnap.exists()) {
-      return docSnap.data();
-    }
-    return null;
+    return docSnap.exists() ? docSnap.data() : null;
   } catch (error) {
     console.error('Get progress error:', error);
     return null;
   }
 };
 
-// Admin: Yeni danışan ekle (Firestore)
+// Admin: Yeni danışan ekle
 export const addClientToFirestore = async (clientData) => {
   try {
     const { email, name, industry, hasContentSupport, startDate } = clientData;
+    const normalizedEmail = email.toLowerCase().trim();
     const now = new Date().toISOString();
 
-    // 1. allowedUsers'a ekle (auth için whitelist)
-    const allowedUsersRef = collection(db, 'allowedUsers');
-    await setDoc(doc(allowedUsersRef), {
-      email: email.toLowerCase(),
+    await setDoc(doc(db, 'allowedUsers', normalizedEmail), {
+      email: normalizedEmail,
       name,
       role: 'user',
       status: 'active',
@@ -252,10 +197,9 @@ export const addClientToFirestore = async (clientData) => {
       createdAt: now
     });
 
-    // 2. users'a ekle (progres takibi için)
-    await setDoc(doc(db, 'users', email.toLowerCase()), {
+    await setDoc(doc(db, 'users', normalizedEmail), {
       name,
-      email: email.toLowerCase(),
+      email: normalizedEmail,
       industry: industry || '',
       hasContentSupport: hasContentSupport ?? true,
       startDate: startDate || now.split('T')[0],

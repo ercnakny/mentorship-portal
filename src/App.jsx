@@ -14,6 +14,7 @@ function App() {
   const [authLoading, setAuthLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [isAllowed, setIsAllowed] = useState(false);
+  const [pendingApproval, setPendingApproval] = useState(false);
   const [currentView, setCurrentView] = useState('dashboard');
   const [selectedSection, setSelectedSection] = useState(null);
   const [selectedStep, setSelectedStep] = useState(null);
@@ -32,6 +33,7 @@ function App() {
         setAuthLoading(false);
         setUser(null);
         setIsAllowed(false);
+        setPendingApproval(false);
         return;
       }
 
@@ -39,11 +41,11 @@ function App() {
         const whitelistUser = await getUserFromWhitelist(firebaseUser.email);
 
         if (!whitelistUser) {
-          // Kullanıcı whitelist'te yok - logout yap ve göster
-          await firebaseUser.delete().catch(() => {});
+          // Kullanıcı whitelist'te yok - pending onay mesajı göster
           setAuthLoading(false);
           setUser(null);
           setIsAllowed(false);
+          setPendingApproval(true);
           return;
         }
 
@@ -51,7 +53,7 @@ function App() {
         const progress = await getUserProgress(firebaseUser.uid);
         setUser({
           uid: firebaseUser.uid,
-          name: firebaseUser.displayName,
+          name: firebaseUser.displayName || whitelistUser.name || 'Kullanıcı',
           email: firebaseUser.email,
           role: whitelistUser.role || 'user',
           startDate: progress?.startDate || whitelistUser.startDate || new Date().toISOString(),
@@ -60,6 +62,7 @@ function App() {
           requestedSections: progress?.requestedSections || []
         });
         setIsAllowed(true);
+        setPendingApproval(false);
       } catch (error) {
         console.error('Auth error:', error);
         setUser(null);
@@ -98,9 +101,18 @@ function App() {
     );
   }
 
-  // Giriş yapılmamış
+  // Giriş yapılmamış veya whitelist'te yok
   if (!user || !isAllowed) {
-    return <LoginPage />;
+    return (
+      <LoginPage
+        pendingApproval={pendingApproval}
+        onLogin={(userData) => {
+          setUser(userData);
+          setIsAllowed(true);
+          setPendingApproval(false);
+        }}
+      />
+    );
   }
 
   return (

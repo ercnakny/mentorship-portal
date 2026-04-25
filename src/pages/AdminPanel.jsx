@@ -176,15 +176,13 @@ const AdminPanel = ({ user, onNavigate }) => {
     }
   }, [activeTab]);
 
-  // Gercek danisanlari Firestore'dan getir
+  // Gercek danisanlari Firestore'dan getir - TÜM TABLARDA
   useEffect(() => {
     const loadRealClients = async () => {
       const clients = await getAllAllowedUsers();
       setRealClients(clients);
     };
-    if (activeTab === 'users' || activeTab === 'tracking') {
-      loadRealClients();
-    }
+    loadRealClients();
   }, [activeTab]);
 
   // Kayıt isteğini onayla
@@ -209,8 +207,8 @@ const AdminPanel = ({ user, onNavigate }) => {
     setRegistrationRequests(registrationRequests.filter(r => r.email !== email));
   };
 
-  // Firestore'dan gelen gercek danisanlar + demo (yoksa)
-  const clients = realClients.length > 0 ? realClients.map(c => ({
+  // Firestore'dan gelen gercek danisanlar - DEMO YOK
+  const clients = realClients.map(c => ({
     id: c.id || c.email,
     name: c.name || 'İsimsiz',
     email: c.email,
@@ -224,7 +222,7 @@ const AdminPanel = ({ user, onNavigate }) => {
     completedSteps: [],
     lastActivity: null,
     stuckDays: 0
-  })) : [];
+  }));
 
   const filteredClients = clients.filter(c => {
     if (clientFilter === 'active') return c.status === 'active';
