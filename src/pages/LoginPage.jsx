@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { AlertCircle, Mail, Lock, Eye, EyeOff, User, Briefcase, UserPlus } from 'lucide-react';
 import { signInWithEmail, signUp } from '../firebase/client';
 
-export default function LoginPage({ pendingApproval = false }) {
+export default function LoginPage({ pendingApproval = false, onLogin }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -41,7 +41,14 @@ export default function LoginPage({ pendingApproval = false }) {
         }
       } else {
         // Giriş işlemi
-        await signInWithEmail(email, password);
+        const user = await signInWithEmail(email, password);
+        if (onLogin && user) {
+          onLogin({
+            uid: user.uid,
+            email: user.email,
+            name: user.displayName || 'Kullanıcı'
+          });
+        }
       }
     } catch (err) {
       if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
