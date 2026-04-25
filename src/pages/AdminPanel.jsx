@@ -143,17 +143,7 @@ const AdminPanel = ({ user, onNavigate }) => {
     startDate: new Date().toISOString().split('T')[0]
   });
 
-  const [allowedEmails, setAllowedEmails] = useState([
-    { 
-      email: 'akinay516@gmail.com', 
-      name: 'Ercan Akınay', 
-      role: 'admin', 
-      status: 'active',
-      industry: 'Online Mentörlük',
-      hasContentSupport: true,
-      startDate: '2026-04-01'
-    },
-  ]);
+  const [allowedEmails, setAllowedEmails] = useState([]);
 
   const [requests, setRequests] = useState([
     { id: 1, userId: 'user1', userName: 'Ahmet Yılmaz', userEmail: 'ahmet@ornek.com', section: 'urun', type: 'completion', message: 'Ürün bölümünü tamamladım', status: 'pending', createdAt: '2026-04-21' },
@@ -165,24 +155,33 @@ const AdminPanel = ({ user, onNavigate }) => {
   // Gercek danisanlar (Firestore'dan)
   const [realClients, setRealClients] = useState([]);
 
-  // Kayıt isteklerini getir
-  useEffect(() => {
-    const loadPendingUsers = async () => {
-      const pending = await getPendingUsers();
-      setRegistrationRequests(pending);
-    };
-    if (activeTab === 'requests') {
-      loadPendingUsers();
-    }
-  }, [activeTab]);
+  // Kayıt isteklerini getir - ARTIK YUKARIDAKI useEffect'te
+  // Bu useEffect kaldırıldı, çünkü yukarıdaki useEffect tüm verileri yüklüyor
 
-  // Gercek danisanlari Firestore'dan getir - TÜM TABLARDA
+  // TÜM verileri yükle - sayfa açıldığında VE tab değiştiğinde
   useEffect(() => {
-    const loadRealClients = async () => {
-      const clients = await getAllAllowedUsers();
+    const loadAllData = async () => {
+      const [pending, clients] = await Promise.all([
+        getPendingUsers(),
+        getAllAllowedUsers()
+      ]);
+      setRegistrationRequests(pending);
       setRealClients(clients);
+      // Admin'i de ekle
+      setAllowedEmails([
+        { 
+          email: 'akinay516@gmail.com', 
+          name: 'Ercan Akınay', 
+          role: 'admin', 
+          status: 'active',
+          industry: 'Online Mentörlük',
+          hasContentSupport: true,
+          startDate: '2026-04-01'
+        },
+        ...clients
+      ]);
     };
-    loadRealClients();
+    loadAllData();
   }, [activeTab]);
 
   // Kayıt isteğini onayla
